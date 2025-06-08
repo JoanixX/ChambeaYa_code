@@ -19,8 +19,6 @@ Para Linux:
 (venv/bin/activate.csh -> csh/tcsh)
 (venv/bin/Activate.ps1 -> pwsh)
 
-Para MacOS:
-5) 
 ===========================================================================
 
 6) Instalar el fastAPI (pip install "fastapi[standard]")
@@ -75,10 +73,8 @@ def index():
 10) Volvemos a la terminal y ejecutamos el archivo para comprobar si funciona (uvicorn main:app --reload)
 11) Ingresamos a la ruta que da el unicorn y verificamos si se muestra el mensaje
 
-==========================================================================================================
 Para entrar a la documentación realizada por defecto de fastAPI:
 - http://127.0.0.1:8000/docs
 
 Para entrar a la documentación alternativa realizada por defecto por fastAPI:
 - http://127.0.0.1:8000/redoc
-==========================================================================================================
