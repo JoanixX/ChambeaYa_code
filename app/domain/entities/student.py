@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime
+from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
@@ -11,3 +11,4 @@ class Student(Base):
     email = Column(String, nullable=False)
     date_of_birth = Column(Date, nullable=False)
     enrollment_date = Column(DateTime, nullable=False, default=datetime.utcnow)
+    #experience_id = Column(Integer, ForeignKey('experience.id'), nullable=True)

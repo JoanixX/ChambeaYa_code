@@ -10,6 +10,10 @@ app = FastAPI()
 app.include_router(student_router)
 app.include_router(company_router)
 
+@app.get("/")
+def read_root():
+    return {"message": "holaaaaaAaAAA a la api"}
+
 @app.get("/test-validation")
 def test_validation():
     try:
@@ -53,7 +57,9 @@ def test_validation():
         invalid_company_result = "OK"
     except Exception as e:
         invalid_company_result = str(e)
+
     return JSONResponse({
+        "message": "Validaciones de prueba",
         "valid_student": valid_student_result,
         "invalid_student": invalid_student_result,
         "valid_company": valid_company_result,
