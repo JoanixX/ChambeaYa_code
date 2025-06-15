@@ -4,6 +4,7 @@ from app.adapters.input.fastapi.routes.company import router as company_router, 
 from app.adapters.input.fastapi.routes.match import router as match_router
 from app.domain.entities.company_filtered_stage1 import router as company_filtered_stage1_router
 from app.domain.entities.student_filtered_stage1 import router as student_filtered_stage1_router
+from fastapi.middleware.cors import CORSMiddleware
 from datetime import date, datetime
 from fastapi.responses import JSONResponse
 
@@ -15,6 +16,20 @@ app.include_router(company_router)
 app.include_router(match_router)
 app.include_router(company_filtered_stage1_router)
 app.include_router(student_filtered_stage1_router)
+
+# Configuracion para el cors
+origins = [
+    "http://localhost:5000",
+    "http://127.0.0.1:5000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def read_root():
