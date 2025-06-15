@@ -1,0 +1,67 @@
+# Documentación de Puertos de la Aplicación (Application Ports)
+
+Este documento describe el propósito, la lógica, fragmentos de código y relación con los casos de uso y endpoints de los archivos en `app/application/ports/`. Los puertos definen interfaces abstractas que conectan los casos de uso (lógica de aplicación) con el dominio y la infraestructura, siguiendo el principio de inversión de dependencias de la arquitectura hexagonal (Ports & Adapters).
+
+---
+
+## ¿Qué es un Puerto?
+Un puerto es una interfaz abstracta que define las operaciones que la aplicación necesita para interactuar con el dominio o servicios externos. Permite desacoplar la lógica de negocio de los detalles de implementación, facilitando la mantenibilidad, pruebas y escalabilidad.
+
+---
+
+## 1. Puertos Implementados
+
+### `register_company_port.py`
+Define la interfaz para el registro de empresas. Obliga a implementar el método asíncrono `register` con los parámetros principales de una empresa y la sesión de base de datos.
+
+**Fragmento de código:**
+```python
+class RegisterCompanyPort(ABC):
+    @abstractmethod
+    async def register(self, *, name: str, industry: str, contact_name: str, email: str, session):
+        pass
+```
+
+**Funcionalidad:**
+- Define el contrato que debe cumplir cualquier caso de uso que registre empresas.
+- Es implementado por `RegisterCompanyUseCase` y utilizado en el endpoint de registro de empresas.
+
+---
+
+### `register_student_port.py`
+Define la interfaz para el registro de estudiantes. Obliga a implementar el método asíncrono `register` con los datos principales del estudiante y la sesión de base de datos.
+
+**Fragmento de código:**
+```python
+class RegisterStudentPort(ABC):
+    @abstractmethod
+    async def register(self, *, name: str, email: str, date_of_birth, enrollment_date, session):
+        pass
+```
+
+**Funcionalidad:**
+- Define el contrato que debe cumplir cualquier caso de uso que registre estudiantes.
+- Es implementado por `RegisterStudentUseCase` y utilizado en el endpoint de registro de estudiantes.
+
+---
+
+## 2. Puertos Definidos (Archivos Vacíos)
+Los siguientes archivos están preparados para definir interfaces de otros procesos clave, pero actualmente no contienen lógica. Se espera que cada uno defina métodos abstractos para su respectivo caso de uso:
+- `add_student_experience_port.py`: Interfaz para agregar experiencia a un estudiante.
+- `assign_courses_to_student_port.py`: Interfaz para asignar cursos a un estudiante.
+- `assign_interests_to_student_port.py`: Interfaz para asignar intereses a un estudiante.
+- `assign_skills_to_student_port.py`: Interfaz para asignar habilidades a un estudiante.
+- `create_match_port.py`: Interfaz para crear un match entre empresa y estudiante.
+- `prepare_matching_input_port.py`: Interfaz para preparar los datos de entrada del matching.
+- `register_agreement_port.py`: Interfaz para registrar acuerdos.
+- `run_company_filter_stage1_port.py` y `run_company_filter_stage2_port.py`: Interfaces para etapas de filtrado de empresas.
+- `run_student_filter_stage1_port.py` y `run_student_filter_stage2_port.py`: Interfaces para etapas de filtrado de estudiantes.
+
+---
+
+### Notas Generales
+- Los puertos deben ser implementados por los casos de uso correspondientes, asegurando que la lógica de aplicación dependa de abstracciones y no de detalles concretos.
+- Cada puerto define el contrato que conecta los endpoints y casos de uso con la lógica de dominio y la infraestructura.
+- Seguir este patrón facilita la prueba unitaria y la sustitución de implementaciones (por ejemplo, para pruebas o cambios de tecnología).
+
+> **Recomendación:** Documentar cada puerto implementado con su propósito, métodos y contratos esperados.

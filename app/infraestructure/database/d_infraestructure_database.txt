@@ -1,0 +1,38 @@
+# Documentación de Infraestructura de Base de Datos
+
+Este documento describe la función, lógica, fragmentos de código y relación con los endpoints de los archivos en `app/infraestructure/database/`. Es útil para desarrolladores que deseen comprender cómo se maneja la conexión y la base de datos en el proyecto.
+
+---
+
+## 1. `connection.py`
+Contiene la configuración y utilidades para la conexión asíncrona a la base de datos PostgreSQL usando SQLAlchemy y asyncpg.
+
+**Código relevante:**
+```python
+DATABASE_URL = "postgresql+asyncpg://..."
+engine = create_async_engine(DATABASE_URL, echo=True)
+async_session = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session() as session:
+        yield session
+```
+
+**Funcionalidad:**
+- Permite la conexión eficiente y asíncrona a la base de datos.
+- Provee la dependencia `get_session` para inyectar sesiones en los endpoints y casos de uso.
+- Es utilizada en endpoints de registro y consulta de entidades.
+
+---
+
+## 2. `base.py`
+Archivo preparado para definir la clase base de los modelos ORM. Normalmente aquí se define el `Base = declarative_base()` que sirve como base para todas las entidades ORM del proyecto. Actualmente está vacío, pero se espera que en el futuro contenga esta definición o utilidades relacionadas con los modelos.
+
+---
+
+### Notas Generales
+- El uso de SQLAlchemy en modo asíncrono permite que la aplicación escale mejor y aproveche la concurrencia de Python con FastAPI.
+- Mantener la configuración de conexión y la definición de la base separadas mejora la mantenibilidad y claridad del código.
+- La función `get_session` es fundamental para la integración entre los endpoints y la base de datos.
+
+> **Recomendación:** Actualizar este documento si se agregan nuevas utilidades, migraciones o cambios en la infraestructura de base de datos.

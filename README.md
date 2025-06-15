@@ -1,3 +1,94 @@
+# ChambeaYA
+
+ChambeaYA es una plataforma diseñada para conectar estudiantes universitarios con empresas a través de retos y proyectos reales, facilitando el desarrollo profesional y la colaboración entre ambos sectores. El sistema permite a las empresas registrar desafíos, y a los estudiantes postularse según sus intereses, habilidades y disponibilidad, generando matches inteligentes y acuerdos de colaboración.
+
+---
+
+## ¿De qué trata el proyecto?
+
+El objetivo principal de ChambeaYA es crear un ecosistema donde:
+- **Empresas** puedan publicar retos o proyectos reales, especificando sus necesidades, cultura y requerimientos.
+- **Estudiantes** puedan registrarse, detallar su perfil académico y profesional, y postularse a los retos que mejor se adapten a sus intereses y habilidades.
+- El sistema realice un proceso de matching inteligente, filtrando y recomendando las mejores combinaciones empresa-estudiante.
+- Se gestionen acuerdos y el seguimiento de la experiencia.
+
+La plataforma está pensada para ser escalable, mantenible y fácil de extender, permitiendo la integración de nuevas funcionalidades y adaptaciones a diferentes contextos educativos y empresariales.
+
+---
+
+## Arquitectura Hexagonal (Ports & Adapters)
+
+ChambeaYA está construido siguiendo el patrón de **arquitectura hexagonal** (también conocido como Ports & Adapters), que busca separar claramente la lógica de negocio del resto de la aplicación (infraestructura, frameworks, interfaces de usuario, etc.).
+
+### ¿Cómo está organizada?
+
+- **Dominio:**
+  - Contiene las entidades principales (por ejemplo, `Student`, `Company`, `Match`), reglas de negocio y servicios puros.
+  - No depende de detalles técnicos ni de frameworks externos.
+
+- **Aplicación:**
+  - Orquesta los casos de uso (por ejemplo, registrar estudiante, crear match, asignar cursos).
+  - Define los **puertos** (interfaces abstractas) que describen lo que la aplicación necesita del dominio o de la infraestructura.
+
+- **Adapters (Adaptadores):**
+  - Implementan los puertos definidos en la capa de aplicación.
+  - Incluyen los controladores HTTP (FastAPI), repositorios de base de datos, y cualquier integración externa.
+
+- **Infraestructura:**
+  - Proporciona detalles concretos de tecnologías (por ejemplo, conexión a base de datos, frameworks, librerías externas).
+
+### Beneficios de la arquitectura hexagonal
+- Permite cambiar la tecnología de base de datos, framework web o cualquier integración externa sin afectar la lógica de negocio.
+- Facilita las pruebas unitarias y de integración, ya que la lógica de negocio está desacoplada de los detalles técnicos.
+- Hace que el sistema sea más mantenible y escalable a largo plazo.
+
+---
+
+## Estructura general del repositorio
+
+- `app/domain/`: Entidades, repositorios y servicios del dominio.
+- `app/application/`: Casos de uso y puertos (interfaces de aplicación).
+- `app/adapters/`: Adaptadores de entrada (FastAPI) y salida (ORM, otros servicios).
+- `app/infraestructure/`: Configuración y utilidades de infraestructura (base de datos, etc.).
+
+---
+
+## Endpoints y API
+
+La API está construida con FastAPI y expone endpoints para registrar empresas, estudiantes, gestionar matches, acuerdos y más. Para detalles de cada endpoint, consulta la documentación interna de cada módulo en `app/adapters/input/fastapi/routes/`.
+
+---
+
+## Instalación y ejecución rápida
+
+1. Clona el repositorio y entra a la carpeta del proyecto.
+2. Crea y activa un entorno virtual de Python.
+3. Instala las dependencias:
+   ```sh
+   pip install -r requirements.txt
+   ```
+4. Ejecuta la aplicación:
+   ```sh
+   uvicorn app.main:app --reload
+   ```
+5. Accede a la documentación interactiva en [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
+## Contribuciones
+
+Las contribuciones son bienvenidas. Por favor, revisa la estructura y la arquitectura antes de proponer cambios importantes.
+
+---
+
+## Créditos
+
+Desarrollado por el equipo ChambeaYA.
+
+---
+
+# (Guía de instalación original)
+
 Versión de pip usada: 25.1.1
 
 Pasos para configurar el entorno local con fastAPI:
@@ -22,42 +113,7 @@ Para Linux:
 ===========================================================================
 
 6) Instalar el fastAPI (pip install "fastapi[standard]")
-7) verificar la instalación con (pip freeze), debe salir algo como esto:
-annotated-types==0.7.0
-anyio==4.9.0
-certifi==2025.4.26
-click==8.2.1
-colorama==0.4.6
-dnspython==2.7.0
-email_validator==2.2.0
-fastapi==0.115.12
-fastapi-cli==0.0.7
-h11==0.16.0
-httpcore==1.0.9
-httptools==0.6.4
-httpx==0.28.1
-idna==3.10
-Jinja2==3.1.6
-markdown-it-py==3.0.0
-MarkupSafe==3.0.2
-mdurl==0.1.2
-pydantic==2.11.5
-pydantic_core==2.33.2
-Pygments==2.19.1
-python-dotenv==1.1.0
-python-multipart==0.0.20
-PyYAML==6.0.2
-rich==14.0.0
-rich-toolkit==0.14.7
-shellingham==1.5.4
-sniffio==1.3.1
-starlette==0.46.2
-typer==0.16.0
-typing-inspection==0.4.1
-typing_extensions==4.14.0
-uvicorn==0.34.3
-watchfiles==1.0.5
-websockets==15.0.1
+7) verificar la instalación con (pip freeze)
 8) En el VSC, creamos un archivo main.py donde pondremos un script de prueba
 9) Ponemos cualquier tipo de script de prueba (
 from fastapi import FastAPI

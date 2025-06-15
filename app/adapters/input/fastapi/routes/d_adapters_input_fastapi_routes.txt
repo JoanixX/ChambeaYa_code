@@ -1,0 +1,116 @@
+# Documentación de Rutas FastAPI (Adapters Input)
+
+Este documento describe el propósito, la lógica, los endpoints y el código relevante de los archivos en `app/adapters/input/fastapi/routes/`. Aquí se definen los endpoints HTTP que exponen la funcionalidad de la aplicación a través de FastAPI, sirviendo como punto de entrada para clientes externos (frontend, integraciones, etc.).
+
+---
+
+## 1. Rutas Implementadas
+
+### `company.py`
+Define los endpoints para registrar y validar empresas. Utiliza modelos Pydantic para validación de datos y depende de casos de uso de la capa de aplicación. Incluye validaciones personalizadas para campos como nombre, tax_id, industria y cultura organizacional.
+
+**Endpoint principal:**
+- `POST /companies/register` — Registra una nueva empresa.
+
+**Fragmento de código:**
+```python
+class CompanyCreate(BaseModel):
+    name: str
+    tax_id: str
+    industry: str
+    # ...otros campos...
+
+@router.post("/companies/register")
+async def register_company(company: CompanyCreate, session: AsyncSession = Depends(get_session)):
+    # Llama al caso de uso RegisterCompanyUseCase
+    ...
+```
+
+**Funcionalidad:**
+- Valida los datos de la empresa.
+- Llama al caso de uso para registrar la empresa en la base de datos.
+- Devuelve respuesta JSON con la empresa registrada o error.
+
+---
+
+### `student.py`
+Define los endpoints para registrar estudiantes. Utiliza modelos Pydantic para validar datos de entrada y realiza validaciones adicionales (por ejemplo, que la fecha de nacimiento no sea futura). Se conecta con el caso de uso de registro de estudiantes y maneja respuestas y errores de forma estructurada.
+
+**Endpoint principal:**
+- `POST /students/register` — Registra un nuevo estudiante.
+
+**Fragmento de código:**
+```python
+class StudentCreate(BaseModel):
+    name: str
+    email: EmailStr
+    date_of_birth: date
+    # ...otros campos...
+
+@router.post("/students/register")
+async def register_student(student: StudentCreate, session: AsyncSession = Depends(get_session)):
+    # Llama al caso de uso RegisterStudentUseCase
+    ...
+```
+
+**Funcionalidad:**
+- Valida los datos del estudiante.
+- Llama al caso de uso para registrar el estudiante en la base de datos.
+- Devuelve respuesta JSON con el estudiante registrado o error.
+
+---
+
+### `match.py`
+Expone un endpoint para obtener el ranking de matches entre estudiantes y empresas. Devuelve una lista de resultados de match con información relevante (IDs, nombres y puntaje de afinidad). Actualmente, los datos son simulados para pruebas.
+
+**Endpoint principal:**
+- `GET /matches/ranking` — Obtiene el ranking de matches.
+
+**Fragmento de código:**
+```python
+@router.get("/matches/ranking", response_model=List[MatchResult])
+async def get_matches_ranking():
+    matches = [
+        MatchResult(student_id=1, company_id=1, score=0.92, ...),
+        # ...otros matches...
+    ]
+    return matches
+```
+
+**Funcionalidad:**
+- Devuelve una lista de matches simulados para pruebas.
+- Cada match incluye IDs, nombres y puntaje de afinidad.
+
+---
+
+### `filter.py`
+Archivo preparado para definir endpoints relacionados con las fases de filtrado (fase 1 y 2) de empresas y estudiantes. Actualmente solo contiene un comentario.
+
+---
+
+## 2. Rutas Definidas (Archivos Vacíos o Parcialmente Vacíos)
+- `agreement.py`: Preparado para exponer endpoints relacionados con acuerdos entre empresas y estudiantes.
+- `matching_input.py`: Preparado para exponer endpoints para la preparación de datos de entrada al proceso de matching.
+
+---
+
+### Notas Generales
+- Cada archivo define un router de FastAPI, agrupando endpoints por entidad o proceso.
+- Se recomienda documentar cada endpoint con su propósito, parámetros, respuestas y posibles errores.
+- El uso de modelos Pydantic asegura la validación y documentación automática de la API.
+
+---
+
+## Diagrama de Flujo de Peticiones (Ejemplo General)
+
+```mermaid
+flowchart TD
+    A[Cliente HTTP] -->|POST /students/register| B[FastAPI Router: student.py]
+    B --> C[Validación Pydantic]
+    C --> D[UseCase: RegisterStudent]
+    D --> E[Base de Datos]
+    E --> F[Respuesta JSON]
+    F --> A
+```
+
+> **Recomendación:** Mantener este documento actualizado conforme se agreguen o modifiquen rutas, y documentar los endpoints directamente en el código usando docstrings y anotaciones de FastAPI.

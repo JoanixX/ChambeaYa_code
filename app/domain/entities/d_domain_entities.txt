@@ -1,0 +1,92 @@
+# Documentación de Entidades del Dominio
+
+Este documento describe el propósito, la lógica, el código relevante y la relación con los endpoints de cada entidad ubicada en `app/domain/entities/` del proyecto. Sirve como referencia para desarrolladores y colaboradores que deseen comprender la estructura de datos principal del dominio.
+
+---
+
+## 1. Company (`company.py`)
+Entidad que representa a una empresa registrada en la plataforma.
+
+**Código relevante:**
+```python
+class Company(Base):
+    __tablename__ = 'company'
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    tax_id = Column(String(20), nullable=False)
+    # ...otros campos...
+```
+
+**Funcionalidad:**
+- Permite almacenar y consultar información de empresas.
+- Se utiliza en endpoints de registro y consulta de empresas.
+
+---
+
+## 2. Student (`student.py`)
+Entidad que representa a un estudiante registrado.
+
+**Código relevante:**
+```python
+class Student(Base):
+    __tablename__ = 'student'
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    email = Column(String, nullable=False, unique=True)
+    # ...otros campos...
+```
+
+**Funcionalidad:**
+- Permite almacenar y consultar información de estudiantes.
+- Se utiliza en endpoints de registro y consulta de estudiantes.
+
+---
+
+## 3. CompanyProfileInput y StudentProfileInput (`company_filtered_stage1.py`, `student_filtered_stage1.py`)
+Modelos Pydantic para recibir el texto completo del perfil de empresa o estudiante y vectorizarlo usando TF-IDF. Se utilizan en endpoints de prueba para analizar perfiles mediante técnicas de NLP.
+
+**Código relevante:**
+```python
+class CompanyProfileInput(BaseModel):
+    profile_text: str = Field(..., description="Texto completo del perfil de la empresa para vectorización")
+
+@router.post("/profile/vectorize/company/test")
+async def test_vectorize_company_profile(payload: CompanyProfileInput = Body(...)):
+    # ...vectorización TF-IDF...
+```
+
+**Funcionalidad:**
+- Permite probar la vectorización de perfiles para futuras funcionalidades de matching inteligente.
+
+---
+
+## 4. Entidades Vacías
+Las siguientes entidades están definidas como archivos pero actualmente no contienen lógica implementada. Se espera que representen conceptos clave del dominio y sean implementadas en el futuro:
+- `agreement.py`: Probablemente representa acuerdos entre empresas y estudiantes.
+- `company_feature.py`: Características específicas de la empresa.
+- `company_filtered_stage2.py`: Segunda etapa de filtrado de empresas.
+- `company_interest_area.py`: Áreas de interés de la empresa.
+- `company_required_skill.py`: Habilidades requeridas por la empresa.
+- `course.py`: Cursos disponibles o realizados.
+- `experience_detail.py`: Detalles de experiencia de estudiantes.
+- `external_link.py`: Enlaces externos relevantes.
+- `interest.py`: Intereses de estudiantes o empresas.
+- `match.py`: Relación de match entre empresa y estudiante.
+- `matching_input.py`: Entrada para el proceso de matching.
+- `skill.py`: Habilidades de estudiantes o requeridas.
+- `student_background.py`: Antecedentes académicos o laborales.
+- `student_certificate.py`: Certificados obtenidos.
+- `student_course.py`: Cursos realizados por el estudiante.
+- `student_feature.py`: Características del estudiante.
+- `student_filtered_stage2.py`: Segunda etapa de filtrado de estudiantes.
+- `student_interest.py`: Intereses del estudiante.
+- `student_skill.py`: Habilidades del estudiante.
+
+---
+
+### Notas Generales
+- Las entidades implementadas con SQLAlchemy (`company.py`, `student.py`) están pensadas para persistencia en base de datos relacional y se usan en endpoints de registro y consulta.
+- Los modelos Pydantic (`company_filtered_stage1.py`, `student_filtered_stage1.py`) se usan para validación y procesamiento de datos en endpoints de FastAPI.
+- El resto de archivos están preparados para futuras expansiones del dominio.
+
+> **Recomendación:** Mantener este documento actualizado conforme se implementen nuevas entidades o se modifiquen las existentes.
