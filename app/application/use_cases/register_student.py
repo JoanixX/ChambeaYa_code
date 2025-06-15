@@ -4,14 +4,38 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 
 class RegisterStudentUseCase(RegisterStudentPort):
-    async def register(self, *, name: str, email: str, date_of_birth, enrollment_date, session: AsyncSession):
+    async def register(
+        self,
+        *,
+        name: str,
+        email: str,
+        date_of_birth,
+        experience_id: int,
+        enrollment_date,
+        location: str,
+        star_skill_id: int,
+        main_motivation_id: int,
+        weekly_availability: int,
+        preferred_modality_id: int,
+        career: str,
+        academic_cycle: int,
+        session: AsyncSession
+    ):
         if enrollment_date.tzinfo is not None:
             enrollment_date = enrollment_date.replace(tzinfo=None)
         new_student = Student(
             name=name,
             email=email,
             date_of_birth=date_of_birth,
-            enrollment_date=enrollment_date
+            experience_id=experience_id,
+            enrollment_date=enrollment_date,
+            location=location,
+            star_skill_id=star_skill_id,
+            main_motivation_id=main_motivation_id,
+            weekly_availability=weekly_availability,
+            preferred_modality_id=preferred_modality_id,
+            career=career,
+            academic_cycle=academic_cycle
         )
         session.add(new_student)
         await session.commit()
