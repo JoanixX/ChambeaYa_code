@@ -101,7 +101,7 @@ Pasos para configurar el entorno local con fastAPI:
 Para Windows:
 5) Una vez creado, entrar al venv desde la terminal 
 (venv\Scripts\Activate.ps1 -> en PowerShell)
-(venv\Scripts\actívate.bat -> en cmd.exe)
+(venv\Scripts\activate.bat -> en cmd.exe)
 
 Para Linux:
 5) Entrar al venv desde la terminal
@@ -126,7 +126,8 @@ def index():
         "message": "prueba1"
     }
 )
-10) Volvemos a la terminal y ejecutamos el archivo para comprobar si funciona (uvicorn main:app --reload)
+10) Volvemos a la terminal y ejecutamos el archivo para comprobar si funciona:
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 11) Ingresamos a la ruta que da el unicorn y verificamos si se muestra el mensaje
 
 Para entrar a la documentación realizada por defecto de fastAPI:

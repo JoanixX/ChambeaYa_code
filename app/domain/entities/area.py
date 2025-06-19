@@ -1,7 +1,7 @@
-from sqlalchemy import Column, SmallInteger, String
+from sqlalchemy import Column, Integer, String, SmallInteger
 from app.infraestructure.database.base import Base
 
-class Interest(Base):
-    __tablename__ = 'interest'
+class Area(Base):
+    __tablename__ = 'area'
     id = Column(SmallInteger, primary_key=True)
     name = Column(String(50), nullable=False)

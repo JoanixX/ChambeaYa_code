@@ -6,29 +6,25 @@ class RegisterCompanyUseCase(RegisterCompanyPort):
     async def register(
         self,
         *,
+        RUC: str,
         name: str,
-        tax_id: str,
+        location: str,
         industry: str,
-        challenge_area_id: int,
-        challenge_description: str | None,
-        company_culture: str,
-        required_hours: int,
-        project_modality_id: int,
+        area_id: int,
         contact_name: str,
         email: str,
+        company_culture: str,
         session: AsyncSession
     ):
         new_company = Company(
+            RUC=RUC,
             name=name,
-            tax_id=tax_id,
+            location=location,
             industry=industry,
-            challenge_area_id=challenge_area_id,
-            challenge_description=challenge_description,
-            company_culture=company_culture,
-            required_hours=required_hours,
-            project_modality_id=project_modality_id,
+            area_id=area_id,
             contact_name=contact_name,
-            email=email
+            email=email,
+            company_culture=company_culture
         )
         session.add(new_company)
         await session.commit()

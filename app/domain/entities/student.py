@@ -1,21 +1,17 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime
-
-Base = declarative_base()
+from sqlalchemy import Column, Integer, String, SmallInteger, Date, ForeignKey
+from app.infraestructure.database.base import Base
 
 class Student(Base):
     __tablename__ = 'student'
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    email = Column(String, nullable=False, unique=True)
-    date_of_birth = Column(Date, nullable=False)
-    experience_id = Column(Integer, nullable=False)
-    enrollment_date = Column(DateTime, nullable=False, default=datetime.utcnow)
-    location = Column(String, nullable=False)
-    star_skill_id = Column(Integer, nullable=False)
-    main_motivation_id = Column(Integer, nullable=False)
-    weekly_availability = Column(Integer, nullable=False)
-    preferred_modality_id = Column(Integer, nullable=False)
-    career = Column(String, nullable=False)
-    academic_cycle = Column(Integer, nullable=False)
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50), nullable=False)
+    email = Column(String(50), unique=True, nullable=False)
+    career = Column(String(100), nullable=False)
+    academic_cycle = Column(SmallInteger, nullable=False)
+    location = Column(String(100), nullable=False)
+    main_motivation = Column(String(100), nullable=True)
+    description = Column(String(200), nullable=True)
+    weekly_availability = Column(SmallInteger, nullable=True)
+    preferred_modality = Column(SmallInteger, nullable=True)
+    experience_id = Column(SmallInteger, ForeignKey('experience_detail.id'), nullable=True)
+    date_of_birth = Column(Date, nullable=True)

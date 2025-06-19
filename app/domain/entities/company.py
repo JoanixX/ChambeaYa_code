@@ -1,18 +1,14 @@
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
+from sqlalchemy import Column, Integer, String, SmallInteger, ForeignKey
+from app.infraestructure.database.base import Base
 
 class Company(Base):
     __tablename__ = 'company'
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    tax_id = Column(String(20), nullable=False)
-    industry = Column(String, nullable=False)
-    challenge_area_id = Column(Integer, nullable=False)
-    challenge_description = Column(String, nullable=True)
-    company_culture = Column(String, nullable=False)
-    required_hours = Column(Integer, nullable=False)
-    project_modality_id = Column(Integer, nullable=False)
-    contact_name = Column(String, nullable=False)
-    email = Column(String, nullable=False, unique=True)
+    id = Column(Integer, primary_key=True)
+    RUC = Column(String(50), unique=True, nullable=False)
+    name = Column(String(100), nullable=False)
+    location = Column(String(100), nullable=False)
+    industry = Column(String(50), nullable=False)
+    area_id = Column(SmallInteger, ForeignKey('area.id'), nullable=True)
+    contact_name = Column(String(100), nullable=False)
+    email = Column(String(50), unique=True, nullable=False)
+    company_culture = Column(String(100), nullable=True)

@@ -1,22 +1,22 @@
 from pydantic import BaseModel, Field, EmailStr, validator
-from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infraestructure.database.connection import get_session
 from app.application.use_cases.register_company import RegisterCompanyUseCase
-from pydantic import BaseModel, Field
 from fastapi.responses import JSONResponse
+from .jwt_utils import create_access_token, verify_password
+from sqlalchemy.future import select
+from app.domain.entities.company import Company
 
 class CompanyCreate(BaseModel):
-    name: str = Field(..., description="Name of the company")
-    tax_id: str = Field(..., description="Tax ID")
-    industry: str = Field(..., description="Industry of the company")
-    challenge_area_id: int = Field(..., description="Challenge area ID")
-    challenge_description: str | None = Field(None, description="Challenge description")
-    company_culture: str = Field(..., description="Company culture")
-    required_hours: int = Field(..., description="Required hours")
-    project_modality_id: int = Field(..., description="Project modality ID")
-    contact_name: str = Field(..., description="Contact name for the company")
-    email: EmailStr = Field(..., description="Email address of the company")
+    RUC: str = Field(..., description="RUC de la empresa")
+    name: str = Field(..., description="Nombre de la empresa")
+    location: str = Field(..., description="Ubicación de la empresa")
+    industry: str = Field(..., description="Industria de la empresa")
+    area_id: int = Field(..., description="ID del área")
+    contact_name: str = Field(..., description="Nombre del contacto")
+    email: EmailStr = Field(..., description="Correo electrónico de la empresa")
+    company_culture: str = Field(..., description="Cultura de la empresa")
 
     @validator('name')
     def name_not_empty(cls, v):
@@ -24,10 +24,10 @@ class CompanyCreate(BaseModel):
             raise ValueError('El nombre de la compañía no puede estar vacío')
         return v
 
-    @validator('tax_id')
-    def tax_id_not_empty(cls, v):
+    @validator('RUC')
+    def ruc_not_empty(cls, v):
         if not v or not v.strip():
-            raise ValueError('El tax_id no puede estar vacío')
+            raise ValueError('El RUC no puede estar vacío')
         return v
 
     @validator('industry')
@@ -54,28 +54,14 @@ router = APIRouter()
 async def register_company(company: CompanyCreate, session: AsyncSession = Depends(get_session)):
     use_case = RegisterCompanyUseCase()
     new_company = await use_case.register(
+        RUC=company.RUC,
         name=company.name,
-        tax_id=company.tax_id,
+        location=company.location,
         industry=company.industry,
-        challenge_area_id=company.challenge_area_id,
-        challenge_description=company.challenge_description,
-        company_culture=company.company_culture,
-        required_hours=company.required_hours,
-        project_modality_id=company.project_modality_id,
+        area_id=company.area_id,
         contact_name=company.contact_name,
         email=company.email,
+        company_culture=company.company_culture,
         session=session
     )
-    return {
-        "id": new_company.id,
-        "name": new_company.name,
-        "tax_id": new_company.tax_id,
-        "industry": new_company.industry,
-        "challenge_area_id": new_company.challenge_area_id,
-        "challenge_description": new_company.challenge_description,
-        "company_culture": new_company.company_culture,
-        "required_hours": new_company.required_hours,
-        "project_modality_id": new_company.project_modality_id,
-        "contact_name": new_company.contact_name,
-        "email": new_company.email
-    }
+    return JSONResponse(content={"id": new_company.id, "email": new_company.email, "name": new_company.name})
