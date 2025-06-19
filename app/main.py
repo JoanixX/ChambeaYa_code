@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from datetime import date, datetime
 from fastapi.responses import JSONResponse
 
-# --- IMPORTS DE TODOS LOS MODELOS PARA REGISTRAR EL METADATA ---
+# noseporquenofuncionasinestolaverdadsupuestamentesporquetienequealmenosverificarquelastablasexistenperoobviamentelohacenporqueyalascree
 from app.domain.entities.experience_detail import ExperienceDetail
 from app.domain.entities.student import Student
 from app.domain.entities.company import Company
@@ -28,7 +28,6 @@ from app.domain.entities.student_skill import StudentSkill
 
 app = FastAPI()
 
-# Incluir routers
 app.include_router(student_router)
 app.include_router(company_router)
 app.include_router(match_router)
@@ -36,7 +35,7 @@ app.include_router(filter_match_router)
 app.include_router(login_router)
 app.include_router(register_router)
 
-# Configuracion para el cors
+#configuracion para el cors
 origins = [
     "http://localhost:5000",
     "http://127.0.0.1:5000",
@@ -57,7 +56,6 @@ def read_root():
 @app.get("/test-validation")
 def test_validation():
     results = {}
-    # Prueba estudiante válido
     try:
         valid_student = StudentCreate(
             name="Juan Perez",
@@ -76,7 +74,6 @@ def test_validation():
         results['valid_student'] = "OK"
     except Exception as e:
         results['valid_student'] = str(e)
-    # Prueba estudiante inválido
     try:
         invalid_student = StudentCreate(
             name=" ",
