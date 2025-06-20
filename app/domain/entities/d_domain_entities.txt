@@ -1,92 +1,204 @@
-# Documentación de Entidades del Dominio
+# Documentación Detallada de Entidades del Dominio
 
-Este documento describe el propósito, la lógica, el código relevante y la relación con los endpoints de cada entidad ubicada en `app/domain/entities/` del proyecto. Sirve como referencia para desarrolladores y colaboradores que deseen comprender la estructura de datos principal del dominio.
+Este documento describe exhaustivamente cada entidad ubicada en `app/domain/entities/`, explicando el propósito, los campos, tipos de datos, claves foráneas y su relación con el modelo de datos y los endpoints. Es una referencia para desarrolladores y colaboradores que deseen comprender la estructura de datos principal del dominio.
 
 ---
 
 ## 1. Company (`company.py`)
 Entidad que representa a una empresa registrada en la plataforma.
 
-**Código relevante:**
-```python
-class Company(Base):
-    __tablename__ = 'company'
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    tax_id = Column(String(20), nullable=False)
-    # ...otros campos...
-```
+**Campos:**
+- `id` (Integer, PK): Identificador único de la empresa.
+- `RUC` (String(50), único, no nulo): Registro Único de Contribuyente de la empresa.
+- `name` (String(100), no nulo): Nombre de la empresa.
+- `location` (String(100), no nulo): Ubicación principal de la empresa.
+- `industry` (String(50), no nulo): Industria o sector al que pertenece.
+- `area_id` (SmallInteger, FK a `area.id`, puede ser nulo): Área principal de la empresa.
+- `contact_name` (String(100), no nulo): Nombre de la persona de contacto.
+- `email` (String(50), único, no nulo): Correo electrónico de la empresa.
+- `company_culture` (String(100), puede ser nulo): Descripción breve de la cultura organizacional.
 
-**Funcionalidad:**
-- Permite almacenar y consultar información de empresas.
-- Se utiliza en endpoints de registro y consulta de empresas.
+**Relaciones:**
+- FK a `area`.
+- Usada en endpoints de registro y consulta de empresas.
 
 ---
 
 ## 2. Student (`student.py`)
 Entidad que representa a un estudiante registrado.
 
-**Código relevante:**
-```python
-class Student(Base):
-    __tablename__ = 'student'
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    email = Column(String, nullable=False, unique=True)
-    # ...otros campos...
-```
+**Campos:**
+- `id` (Integer, PK): Identificador único del estudiante.
+- `name` (String(50), no nulo): Nombre completo.
+- `email` (String(50), único, no nulo): Correo electrónico.
+- `career` (String(100), no nulo): Carrera universitaria.
+- `academic_cycle` (SmallInteger, no nulo): Ciclo académico actual.
+- `location` (String(100), no nulo): Ubicación del estudiante.
+- `main_motivation` (String(100), puede ser nulo): Motivación principal.
+- `description` (String(200), puede ser nulo): Descripción personal.
+- `weekly_availability` (SmallInteger, puede ser nulo): Horas disponibles por semana.
+- `preferred_modality` (SmallInteger, puede ser nulo): Modalidad preferida (presencial, remoto, etc.).
+- `experience_id` (SmallInteger, FK a `experience_detail.id`, puede ser nulo): Experiencia previa.
+- `date_of_birth` (Date, puede ser nulo): Fecha de nacimiento.
 
-**Funcionalidad:**
-- Permite almacenar y consultar información de estudiantes.
-- Se utiliza en endpoints de registro y consulta de estudiantes.
-
----
-
-## 3. CompanyProfileInput y StudentProfileInput (`company_filtered_stage1.py`, `student_filtered_stage1.py`)
-Modelos Pydantic para recibir el texto completo del perfil de empresa o estudiante y vectorizarlo usando TF-IDF. Se utilizan en endpoints de prueba para analizar perfiles mediante técnicas de NLP.
-
-**Código relevante:**
-```python
-class CompanyProfileInput(BaseModel):
-    profile_text: str = Field(..., description="Texto completo del perfil de la empresa para vectorización")
-
-@router.post("/profile/vectorize/company/test")
-async def test_vectorize_company_profile(payload: CompanyProfileInput = Body(...)):
-    # ...vectorización TF-IDF...
-```
-
-**Funcionalidad:**
-- Permite probar la vectorización de perfiles para futuras funcionalidades de matching inteligente.
+**Relaciones:**
+- FK a `experience_detail`.
+- Usada en endpoints de registro y consulta de estudiantes.
 
 ---
 
-## 4. Entidades Vacías
-Las siguientes entidades están definidas como archivos pero actualmente no contienen lógica implementada. Se espera que representen conceptos clave del dominio y sean implementadas en el futuro:
-- `agreement.py`: Probablemente representa acuerdos entre empresas y estudiantes.
-- `company_feature.py`: Características específicas de la empresa.
-- `company_filtered_stage2.py`: Segunda etapa de filtrado de empresas.
-- `company_interest_area.py`: Áreas de interés de la empresa.
-- `company_required_skill.py`: Habilidades requeridas por la empresa.
-- `course.py`: Cursos disponibles o realizados.
-- `experience_detail.py`: Detalles de experiencia de estudiantes.
-- `external_link.py`: Enlaces externos relevantes.
-- `interest.py`: Intereses de estudiantes o empresas.
-- `match.py`: Relación de match entre empresa y estudiante.
-- `matching_input.py`: Entrada para el proceso de matching.
-- `skill.py`: Habilidades de estudiantes o requeridas.
-- `student_background.py`: Antecedentes académicos o laborales.
-- `student_certificate.py`: Certificados obtenidos.
-- `student_course.py`: Cursos realizados por el estudiante.
-- `student_feature.py`: Características del estudiante.
-- `student_filtered_stage2.py`: Segunda etapa de filtrado de estudiantes.
-- `student_interest.py`: Intereses del estudiante.
-- `student_skill.py`: Habilidades del estudiante.
+## 3. AppUser (`app_user.py`)
+Usuario autenticable (admin, company, student).
+
+**Campos:**
+- `id` (Integer, PK): Identificador único del usuario.
+- `email` (String(100), único, no nulo): Correo electrónico para login.
+- `password_hash` (String(255), no nulo): Hash seguro de la contraseña.
+- `role` (Enum `user_role`, no nulo): Rol del usuario (`admin`, `company`, `student`).
+- `related_id` (Integer, no nulo): ID relacionado (id de estudiante o empresa).
+
+**Relaciones:**
+- Relaciona con `student` o `company` según el rol.
+- Usada en endpoints de registro de usuario y login.
 
 ---
 
-### Notas Generales
-- Las entidades implementadas con SQLAlchemy (`company.py`, `student.py`) están pensadas para persistencia en base de datos relacional y se usan en endpoints de registro y consulta.
-- Los modelos Pydantic (`company_filtered_stage1.py`, `student_filtered_stage1.py`) se usan para validación y procesamiento de datos en endpoints de FastAPI.
-- El resto de archivos están preparados para futuras expansiones del dominio.
+## 4. Agreement (`agreement.py`)
+Acuerdo formal entre empresa y estudiante.
 
-> **Recomendación:** Mantener este documento actualizado conforme se implementen nuevas entidades o se modifiquen las existentes.
+**Campos:**
+- `id` (Integer, PK): Identificador único del acuerdo.
+- `job_offer_id` (Integer, FK a `job_offer.id`, no nulo): Oferta laboral asociada.
+- `student_id` (Integer, FK a `student.id`, no nulo): Estudiante involucrado.
+- `status` (Enum `agreement_status`, no nulo): Estado del acuerdo (`pending`, `active`, `completed`, `cancelled`).
+- `start_date` (Date, puede ser nulo): Fecha de inicio.
+- `end_date` (Date, puede ser nulo): Fecha de fin.
+
+**Relaciones:**
+- FK a `job_offer` y `student`.
+- Usada en endpoints de acuerdos.
+
+---
+
+## 5. ExperienceDetail (`experience_detail.py`)
+Detalle de experiencia previa.
+
+**Campos:**
+- `id` (SmallInteger, PK): Identificador único.
+- `name` (String(50), no nulo): Nombre de la experiencia.
+- `description` (String(255), puede ser nulo): Descripción.
+- `duration_in_months` (SmallInteger, puede ser nulo): Duración en meses.
+
+---
+
+## 6. Area (`area.py`)
+Área de especialización o sector.
+
+**Campos:**
+- `id` (SmallInteger, PK): Identificador único.
+- `name` (String(50), no nulo): Nombre del área.
+
+---
+
+## 7. Skill (`skill.py`)
+Habilidad registrada en el sistema.
+
+**Campos:**
+- `id` (SmallInteger, PK): Identificador único.
+- `name` (String(50), no nulo): Nombre de la habilidad.
+
+---
+
+## 8. Interest (`interest.py`)
+Interés registrado en el sistema.
+
+**Campos:**
+- `id` (SmallInteger, PK): Identificador único.
+- `name` (String(50), no nulo): Nombre del interés.
+
+---
+
+## 9. JobOffer (`job_offer.py`)
+Oferta laboral publicada por una empresa.
+
+**Campos:**
+- `id` (Integer, PK): Identificador único.
+- `company_id` (Integer, FK a `company.id`, no nulo): Empresa que publica la oferta.
+- `title` (String(60), no nulo): Título de la oferta.
+- `description` (String(200), no nulo): Descripción de la oferta.
+- `required_hours` (SmallInteger, no nulo): Horas requeridas.
+- `approximated_salary` (Integer, puede ser nulo): Salario aproximado.
+- `duration` (SmallInteger, puede ser nulo): Duración en meses.
+- `start_date` (Date, puede ser nulo): Fecha de inicio.
+- `area_id` (SmallInteger, FK a `area.id`, no nulo): Área relacionada.
+- `experience_id` (SmallInteger, FK a `experience_detail.id`, puede ser nulo): Experiencia requerida.
+- `modality` (SmallInteger, puede ser nulo): Modalidad de trabajo.
+
+---
+
+## 10. MatchJobStudent (`match_job_student.py`)
+Match entre estudiante y oferta laboral.
+
+**Campos:**
+- `id` (Integer, PK): Identificador único.
+- `student_id` (Integer, FK a `student.id`, no nulo): Estudiante.
+- `job_offer_id` (Integer, FK a `job_offer.id`, no nulo): Oferta laboral.
+- `score` (Numeric(5,2), puede ser nulo): Puntaje de match.
+- `match_date` (DateTime, puede ser nulo): Fecha del match.
+
+---
+
+## 11. FilterMatch (`filter_match.py`)
+Resultado de filtrado de matching.
+
+**Campos:**
+- `student_id` (Integer, FK a `student.id`, PK): Estudiante.
+- `job_offer_id` (Integer, FK a `job_offer.id`, PK): Oferta laboral.
+- `model_score` (Numeric(5,2), puede ser nulo): Puntaje del modelo.
+- `status` (String(30), puede ser nulo): Estado del filtro.
+- `filtered_at` (DateTime, puede ser nulo): Fecha de filtrado.
+- `stage` (SmallInteger, PK): Etapa del filtro.
+
+---
+
+## 12. ExternalLink (`external_link.py`)
+Enlace externo asociado a un estudiante.
+
+**Campos:**
+- `id` (Integer, PK): Identificador único.
+- `student_id` (Integer, FK a `student.id`, no nulo): Estudiante asociado.
+- `link` (String(255), no nulo): URL del enlace.
+
+---
+
+## 13. StudentSkill (`student_skill.py`)
+Relación N:M entre estudiantes y habilidades.
+
+**Campos:**
+- `student_id` (Integer, FK a `student.id`, PK): Estudiante.
+- `skill_id` (SmallInteger, FK a `skill.id`, PK): Habilidad.
+
+---
+
+## 14. StudentInterest (`student_interest.py`)
+Relación N:M entre estudiantes e intereses.
+
+**Campos:**
+- `student_id` (Integer, FK a `student.id`, PK): Estudiante.
+- `interest_id` (SmallInteger, FK a `interest.id`, PK): Interés.
+
+---
+
+## 15. JobOfferRequiredSkill (`job_offer_required_skill.py`)
+Relación N:M entre ofertas laborales y habilidades requeridas.
+
+**Campos:**
+- `job_offer_id` (Integer, FK a `job_offer.id`, PK): Oferta laboral.
+- `skill_id` (SmallInteger, FK a `skill.id`, PK): Habilidad requerida.
+
+---
+
+**Notas generales:**
+- Todos los modelos heredan de `Base` definido en `app/infraestructure/database/base.py`.
+- Los tipos de datos y relaciones están alineados con el esquema de la base de datos PostgreSQL.
+- Las entidades se usan en los endpoints y casos de uso correspondientes.

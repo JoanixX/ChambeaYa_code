@@ -1,68 +1,85 @@
-# Documentación de Casos de Uso de la Aplicación
+# Documentación Detallada de Casos de Uso de la Aplicación
 
-Este documento describe la función, lógica, fragmentos de código y relación con los endpoints de los archivos en `app/application/use_cases/`. Es una referencia para desarrolladores que deseen comprender los procesos principales (casos de uso) que orquestan la lógica de negocio de la aplicación.
-
----
-
-## 1. Casos de Uso Implementados
-
-### `register_company.py`
-Implementa el caso de uso para registrar una nueva empresa en la plataforma. Recibe los datos principales de la empresa, crea una instancia de la entidad `Company` y la persiste en la base de datos usando una sesión asíncrona de SQLAlchemy.
-
-**Fragmento de código:**
-```python
-class RegisterCompanyUseCase(RegisterCompanyPort):
-    async def register(self, *, name, tax_id, industry, ... , session):
-        new_company = Company(name=name, tax_id=tax_id, industry=industry, ...)
-        session.add(new_company)
-        await session.commit()
-        await session.refresh(new_company)
-        return new_company
-```
-
-**Funcionalidad:**
-- Orquesta el proceso de registro de empresas.
-- Es invocado por el endpoint `POST /companies/register`.
+Este documento describe exhaustivamente cada caso de uso ubicado en `app/application/use_cases/`, explicando su propósito, lógica, parámetros, relación con los puertos, entidades y endpoints. Los casos de uso orquestan la lógica de negocio y son el punto de entrada para las operaciones principales del sistema.
 
 ---
 
-### `register_student.py`
-Implementa el caso de uso para registrar un nuevo estudiante. Recibe los datos principales del estudiante, crea una instancia de la entidad `Student` y la guarda en la base de datos. Incluye manejo de fechas y validaciones básicas.
+## ¿Qué es un Caso de Uso?
+Un caso de uso es una clase que implementa un puerto (interface) y define la lógica para una operación específica del sistema (por ejemplo, registrar un estudiante, crear un match, etc.).
 
-**Fragmento de código:**
+---
+
+## Casos de Uso Implementados
+
+### 1. `register_student.py`
+**Propósito:** Registrar un nuevo estudiante en la base de datos.
+
+**Clase:**
 ```python
 class RegisterStudentUseCase(RegisterStudentPort):
-    async def register(self, *, name, email, date_of_birth, ..., session):
-        new_student = Student(name=name, email=email, date_of_birth=date_of_birth, ...)
-        session.add(new_student)
-        await session.commit()
-        await session.refresh(new_student)
-        return new_student
+    async def register(self, *, name, email, date_of_birth, experience_id, location, weekly_availability, preferred_modality, career, academic_cycle, session):
+        ...
 ```
+- **name**: Nombre del estudiante.
+- **email**: Correo electrónico único.
+- **date_of_birth**: Fecha de nacimiento.
+- **experience_id**: ID de experiencia previa.
+- **location**: Ubicación.
+- **weekly_availability**: Horas disponibles por semana.
+- **preferred_modality**: Modalidad preferida.
+- **career**: Carrera universitaria.
+- **academic_cycle**: Ciclo académico actual.
+- **session**: Sesión de base de datos asíncrona.
 
-**Funcionalidad:**
-- Orquesta el proceso de registro de estudiantes.
-- Es invocado por el endpoint `POST /students/register`.
-
----
-
-## 2. Casos de Uso Definidos (Archivos Vacíos)
-Los siguientes archivos están preparados para implementar casos de uso específicos, pero actualmente no contienen lógica. Se espera que cada uno orqueste procesos clave del dominio:
-- `add_student_experience.py`: Agregar experiencia a un estudiante.
-- `assign_courses_to_student.py`: Asignar cursos a un estudiante.
-- `assign_interests_to_student.py`: Asignar intereses a un estudiante.
-- `assign_skills_to_student.py`: Asignar habilidades a un estudiante.
-- `create_match.py`: Crear un match entre empresa y estudiante.
-- `prepare_matching_input.py`: Preparar los datos de entrada para el proceso de matching.
-- `register_agreement.py`: Registrar un acuerdo entre empresa y estudiante.
-- `run_company_filter_stage1.py` y `run_company_filter_stage2.py`: Ejecutar etapas de filtrado de empresas.
-- `run_student_filter_stage1.py` y `run_student_filter_stage2.py`: Ejecutar etapas de filtrado de estudiantes.
+**Relación:** Implementa el puerto `RegisterStudentPort`. Usado por el endpoint `/register/student`.
 
 ---
 
-### Notas Generales
-- Los casos de uso implementados siguen el patrón de orquestación de lógica de negocio, separando la lógica de aplicación de la infraestructura y el dominio.
-- Cada caso de uso implementado es invocado por un endpoint específico y utiliza entidades y puertos definidos en el dominio y la aplicación.
-- Se recomienda mantener este documento actualizado conforme se implementen nuevos casos de uso o se modifiquen los existentes.
+### 2. `register_company.py`
+**Propósito:** Registrar una nueva empresa en la base de datos.
 
-> **Recomendación:** Documentar cada caso de uso implementado con su propósito, entradas, salidas y reglas de negocio relevantes.
+**Clase:**
+```python
+class RegisterCompanyUseCase(RegisterCompanyPort):
+    async def register(self, *, RUC, name, location, industry, area_id, contact_name, email, company_culture, session):
+        ...
+```
+- **RUC**: Registro Único de Contribuyente.
+- **name**: Nombre de la empresa.
+- **location**: Ubicación.
+- **industry**: Industria o sector.
+- **area_id**: ID de área principal.
+- **contact_name**: Nombre del contacto.
+- **email**: Correo electrónico único.
+- **company_culture**: Cultura organizacional.
+- **session**: Sesión de base de datos asíncrona.
+
+**Relación:** Implementa el puerto `RegisterCompanyPort`. Usado por el endpoint `/register/company`.
+
+---
+
+## Casos de Uso Definidos para Extensión
+
+Los siguientes archivos existen como plantillas para futuros casos de uso o para mantener la arquitectura limpia, aunque actualmente pueden estar vacíos:
+- `add_student_experience.py`: Para agregar experiencia a un estudiante.
+- `assign_interests_to_student.py`: Para asignar intereses a un estudiante.
+- `assign_skills_to_student.py`: Para asignar habilidades a un estudiante.
+- `create_match.py`: Para la lógica de creación de matches.
+- `prepare_matching_input.py`: Para preparar los datos de entrada al sistema de matching.
+- `register_agreement.py`: Para registrar acuerdos entre empresa y estudiante.
+- `run_filter_match.py`: Para ejecutar el filtrado de matches.
+
+**Nota:** Aunque algunos casos de uso están vacíos, su presencia es clave para mantener la extensibilidad y claridad de la arquitectura hexagonal.
+
+---
+
+## Relación con Puertos y Endpoints
+- Cada caso de uso implementa un puerto definido en `app/application/ports/`.
+- Son invocados por los endpoints de FastAPI y orquestan la lógica de negocio.
+- Permiten mantener la lógica desacoplada y fácilmente testeable.
+
+---
+
+**Resumen:**
+- Los casos de uso son el núcleo de la lógica de aplicación.
+- Su diseño permite escalar y mantener el sistema de forma robusta y flexible.
