@@ -1,4 +1,4 @@
-# ChambeaYA
+# ChambeaYA - Rama Develop
 
 ChambeaYA es una plataforma diseñada para conectar estudiantes universitarios con empresas a través de retos y proyectos reales, facilitando el desarrollo profesional y la colaboración entre ambos sectores. El sistema permite a las empresas registrar desafíos, y a los estudiantes postularse según sus intereses, habilidades y disponibilidad, generando matches inteligentes y acuerdos de colaboración.
 
