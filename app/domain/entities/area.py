@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, SmallInteger
+from sqlalchemy import Column, SmallInteger, String
 from app.infraestructure.database.base import Base
 
 class Area(Base):

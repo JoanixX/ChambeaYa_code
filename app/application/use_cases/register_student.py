@@ -16,6 +16,8 @@ class RegisterStudentUseCase(RegisterStudentPort):
         preferred_modality: int,
         career: str,
         academic_cycle: int,
+        main_motivation: str,
+        description: str,
         session: AsyncSession
     ):
         new_student = Student(
@@ -27,7 +29,9 @@ class RegisterStudentUseCase(RegisterStudentPort):
             weekly_availability=weekly_availability,
             preferred_modality=preferred_modality,
             career=career,
-            academic_cycle=academic_cycle
+            academic_cycle=academic_cycle,
+            main_motivation=main_motivation,
+            description=description
         )
         session.add(new_student)
         await session.commit()

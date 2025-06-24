@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, SmallInteger, String, Date, ForeignKey
+from sqlalchemy import Column, Integer, SmallInteger, String, Date, ForeignKey, JSON
 from app.infraestructure.database.base import Base
 
 class JobOffer(Base):
@@ -12,5 +12,6 @@ class JobOffer(Base):
     duration = Column(SmallInteger, nullable=True)
     start_date = Column(Date, nullable=True)
     area_id = Column(SmallInteger, ForeignKey('area.id'), nullable=False)
-    experience_id = Column(SmallInteger, ForeignKey('experience_detail.id'), nullable=True)
-    modality = Column(SmallInteger, nullable=True)
+    experience_id = Column(SmallInteger, ForeignKey('experience_detail.id'), nullable=False)
+    modality = Column(SmallInteger, nullable=False)
+    embedding = Column(JSON, nullable=True)

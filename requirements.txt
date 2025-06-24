@@ -38,6 +38,7 @@ typing_extensions==4.14.0
 uvicorn==0.34.3
 watchfiles==1.0.5
 websockets==15.0.1
+requests
 
 #para la autenticación y seguridad con JWT
 pyjwt=2.10.0

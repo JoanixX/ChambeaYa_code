@@ -19,6 +19,8 @@ class StudentCreate(BaseModel):
     preferred_modality: int = Field(..., description="Preferred modality")
     career: str = Field(..., description="Career")
     academic_cycle: int = Field(..., description="Academic cycle")
+    main_motivation: str = Field(..., description="Main motivation")
+    description: str = Field(..., description="Description")
 
     @validator('name')
     def name_not_empty(cls, v):
@@ -65,6 +67,8 @@ async def register_student(student: StudentCreate, session: AsyncSession = Depen
         preferred_modality=student.preferred_modality,
         career=student.career,
         academic_cycle=student.academic_cycle,
+        main_motivation=student.main_motivation,
+        description=student.description,
         session=session
     )
     return JSONResponse(content={"id": new_student.id})
