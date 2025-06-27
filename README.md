@@ -135,3 +135,10 @@ Para entrar a la documentación realizada por defecto de fastAPI:
 
 Para entrar a la documentación alternativa realizada por defecto por fastAPI:
 - http://127.0.0.1:8000/redoc
+
+===========================================================================
+
+Para el modelo de AI:
+
+Para el modelo, se debe tomar en cuenta que primero se va a abrir el servidor en el puerto:
+uvicorn app.main:app --port 8000 --reload

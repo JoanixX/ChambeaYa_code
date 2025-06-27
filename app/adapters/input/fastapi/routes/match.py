@@ -1,37 +1,17 @@
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel
-from typing import List
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from app.infraestructure.database.connection import get_session
-from app.domain.entities.match_job_student import MatchJobStudent
-from app.domain.entities.student import Student
-from app.domain.entities.company import Company
-from app.domain.entities.job_offer import JobOffer
+from fastapi import APIRouter, Body
+from app.application.use_cases.create_match import CreateMatchUseCase
+from app.application.ports.create_match_port import CreateMatchPort
+from app.infraestructure.ai_client.ai_connection import call_match_job_student_ia
 
 router = APIRouter()
 
-class MatchResult(BaseModel):
-    student_id: int
-    company_id: int
-    score: float
-    student_name: str
-    company_name: str
+class CreateMatchPortAdapter(CreateMatchPort):
+    async def call_ai_service(self, estudiante, job_offer):
+        return call_match_job_student_ia(estudiante, job_offer)
 
-@router.get("/matches/ranking", response_model=List[MatchResult])
-async def get_matches_ranking(session: AsyncSession = Depends(get_session)):
-    result = await session.execute(select(MatchJobStudent, Student, JobOffer, Company)
-        .join(Student, MatchJobStudent.student_id == Student.id)
-        .join(JobOffer, MatchJobStudent.job_offer_id == JobOffer.id)
-        .join(Company, JobOffer.company_id == Company.id)
-    )
-    matches = []
-    for match, student, job_offer, company in result.all():
-        matches.append(MatchResult(
-            student_id=student.id,
-            company_id=company.id,
-            score=float(match.score) if match.score is not None else 0.0,
-            student_name=student.name,
-            company_name=company.name
-        ))
-    return matches
+@router.post("/match/")
+async def create_match(estudiante: dict = Body(...), job_offer: dict = Body(...)):
+    port = CreateMatchPort()
+    use_case = CreateMatchUseCase(port)
+    result = use_case.execute(estudiante, job_offer)
+    return result

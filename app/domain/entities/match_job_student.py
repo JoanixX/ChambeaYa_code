@@ -1,11 +1,8 @@
-from sqlalchemy import Column, Integer, SmallInteger, ForeignKey, Numeric, String, DateTime
-from app.infraestructure.database.base import Base
-
-class MatchJobStudent(Base):
-    __tablename__ = 'match_job_student'
-    id = Column(Integer, primary_key=True)
-    student_id = Column(Integer, ForeignKey('student.id'), nullable=False)
-    job_offer_id = Column(Integer, ForeignKey('job_offer.id'), nullable=False)
-    score = Column(Numeric(5,2), nullable=False)
-    match_date = Column(DateTime, nullable=False)
-    rank = Column(SmallInteger, nullable=False)
+class MatchJobStudent:
+    def __init__(self, id: int, student_id: int, job_offer_id: int, score: float, match_date, rank: int):
+        self.id = id
+        self.student_id = student_id
+        self.job_offer_id = job_offer_id
+        self.score = score
+        self.match_date = match_date
+        self.rank = rank

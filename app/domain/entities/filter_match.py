@@ -1,8 +1,5 @@
-from sqlalchemy import Column, Integer, SmallInteger, ForeignKey, String
-from app.infraestructure.database.base import Base
-
-class FilterMatch(Base):
-    __tablename__ = 'filter_match'
-    job_offer_id = Column(Integer, ForeignKey('job_offer.id'), primary_key=True)
-    status = Column(String(30), nullable=False)
-    stage = Column(SmallInteger, primary_key=True)
+class FilterMatch:
+    def __init__(self, job_offer_id: int, status: str, stage: int):
+        self.job_offer_id = job_offer_id
+        self.status = status
+        self.stage = stage
