@@ -14,4 +14,5 @@ class JobOffer(Base):
     area_id = Column(SmallInteger, ForeignKey('area.id'), nullable=False)
     experience_id = Column(SmallInteger, ForeignKey('experience_detail.id'), nullable=False)
     modality = Column(SmallInteger, nullable=False)
+    requirements = Column(String(500), nullable=True)  # Nuevo campo agregado
     embedding = Column(JSON, nullable=True)

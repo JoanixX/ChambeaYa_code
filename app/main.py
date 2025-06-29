@@ -5,7 +5,6 @@ from app.adapters.input.fastapi.routes.match import router as match_router
 from app.adapters.input.fastapi.routes.filter_match import router as filter_match_router
 from app.adapters.input.fastapi.routes.login_app import router as login_router
 from app.adapters.input.fastapi.routes.register_app import router as register_router
-from app.adapters.input.fastapi.routes.ai_test import router as ai_test_router
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import date, datetime
 from fastapi.responses import JSONResponse
@@ -35,7 +34,6 @@ app.include_router(match_router)
 app.include_router(filter_match_router)
 app.include_router(login_router)
 app.include_router(register_router)
-app.include_router(ai_test_router)
 
 #configuracion para el cors
 origins = [
