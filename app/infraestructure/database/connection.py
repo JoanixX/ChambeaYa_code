@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 #conexion a la base de datos PostgreSQL
 ## DATABASE_URL = "postgresql+asyncpg://postgres:etc100charmander@localhost:5432/chambeaya-db"
-DATABASE_URL = "postgresql+asyncpg://admindbchambeaya%40db-postgresql-chambeaya:1qa.!QA.@db-postgresql-chambeaya.postgres.database.azure.com:5432/chambeaya-db"
+DATABASE_URL = "postgresql+asyncpg://admindbchambeaya%40db-postgresql-chambeaya:1qa.!QA.@db-postgresql-chambeaya.postgres.database.azure.com:5432/chambeaya-db?ssl=require"
 
 
 #creamos el engine asíncrono
