@@ -40,15 +40,15 @@ watchfiles==1.0.5
 websockets==15.0.1
 
 #para la autenticación y seguridad con JWT
-pyjwt=2.10.0
+pyjwt==2.10.0
 cryptography==45.0.4
-bcrypt=4.3.0
-passlib=1.7.4
-ecdsa=0.19.1
-pyasn1=0.6.1
-python-jose=3.5.0
-rsa=4.9.1
-six=1.17.0
+bcrypt==4.3.0
+passlib==1.7.4
+ecdsa==0.19.1
+pyasn1==0.6.1
+python-jose==3.5.0
+rsa==4.9.1
+six==1.17.0
 
 #dependencias adicionales
 sqlalchemy
