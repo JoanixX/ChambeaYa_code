@@ -63,6 +63,7 @@ La API está construida con FastAPI y expone endpoints para registrar empresas, 
 
 1. Clona el repositorio y entra a la carpeta del proyecto.
 2. Crea y activa un entorno virtual de Python.
+  '''python -m venv venv'''
 3. Instala las dependencias:
    ```sh
    pip install -r requirements.txt
