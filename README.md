@@ -96,7 +96,8 @@ Pasos para configurar el entorno local con fastAPI:
 1) Crear una carpeta
 2) Entrar a la carpeta desde la terminal
 3) Abrir el VSCode desde la carpeta
-4) Crear un entorno virtual con Python (py -m venv venv)
+4) Crear un entorno virtual con Python 
+(py -m venv venv)
 
 ===========================================================================
 Para Windows:
