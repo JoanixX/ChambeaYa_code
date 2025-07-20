@@ -5,9 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.infraestructure.database.connection import get_session
 from app.application.use_cases.register_student import RegisterStudentUseCase
 from fastapi.responses import JSONResponse
-from .jwt_utils import create_access_token, verify_password
-from sqlalchemy.future import select
-from app.domain.entities.student import Student
 
 class StudentCreate(BaseModel):
     name: str = Field(..., description="Name of the student")
@@ -19,6 +16,8 @@ class StudentCreate(BaseModel):
     preferred_modality: int = Field(..., description="Preferred modality")
     career: str = Field(..., description="Career")
     academic_cycle: int = Field(..., description="Academic cycle")
+    main_motivation: str = Field(..., description="Main motivation")
+    description: str = Field(..., description="Description")
 
     @validator('name')
     def name_not_empty(cls, v):
@@ -65,6 +64,8 @@ async def register_student(student: StudentCreate, session: AsyncSession = Depen
         preferred_modality=student.preferred_modality,
         career=student.career,
         academic_cycle=student.academic_cycle,
-        session=session
+        main_motivation=student.main_motivation,
+        description=student.description,
+        session=session,
     )
     return JSONResponse(content={"id": new_student.id})

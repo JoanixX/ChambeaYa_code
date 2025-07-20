@@ -1,4 +1,4 @@
-# ChambeaYA
+# ChambeaYA - Rama Develop
 
 ChambeaYA es una plataforma diseñada para conectar estudiantes universitarios con empresas a través de retos y proyectos reales, facilitando el desarrollo profesional y la colaboración entre ambos sectores. El sistema permite a las empresas registrar desafíos, y a los estudiantes postularse según sus intereses, habilidades y disponibilidad, generando matches inteligentes y acuerdos de colaboración.
 
@@ -63,6 +63,7 @@ La API está construida con FastAPI y expone endpoints para registrar empresas, 
 
 1. Clona el repositorio y entra a la carpeta del proyecto.
 2. Crea y activa un entorno virtual de Python.
+  '''python -m venv venv'''
 3. Instala las dependencias:
    ```sh
    pip install -r requirements.txt
@@ -95,7 +96,8 @@ Pasos para configurar el entorno local con fastAPI:
 1) Crear una carpeta
 2) Entrar a la carpeta desde la terminal
 3) Abrir el VSCode desde la carpeta
-4) Crear un entorno virtual con Python (py -m venv venv)
+4) Crear un entorno virtual con Python 
+(py -m venv venv)
 
 ===========================================================================
 Para Windows:
@@ -135,3 +137,10 @@ Para entrar a la documentación realizada por defecto de fastAPI:
 
 Para entrar a la documentación alternativa realizada por defecto por fastAPI:
 - http://127.0.0.1:8000/redoc
+
+===========================================================================
+
+Para el modelo de AI:
+
+Para el modelo, se debe tomar en cuenta que primero se va a abrir el servidor en el puerto:
+uvicorn app.main:app --port 8000 --reload

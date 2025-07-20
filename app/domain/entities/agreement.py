@@ -13,6 +13,6 @@ class Agreement(Base):
     id = Column(Integer, primary_key=True)
     job_offer_id = Column(Integer, ForeignKey('job_offer.id'), nullable=False)
     student_id = Column(Integer, ForeignKey('student.id'), nullable=False)
-    status = Column(Enum(AgreementStatus), nullable=False)
+    status = Column(Enum(AgreementStatus, name="agreement_status"), nullable=False)
     start_date = Column(Date, nullable=True)
     end_date = Column(Date, nullable=True)
