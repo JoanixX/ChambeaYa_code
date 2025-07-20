@@ -1,39 +1,44 @@
 from app.application.ports.register_student_port import RegisterStudentPort
 from app.domain.entities.student import Student
-from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime
+from app.domain.services.student_profile_evaluator import StudentProfileEvaluator
 
-class RegisterStudentUseCase(RegisterStudentPort):
-    async def register(
-        self,
-        *,
-        name: str,
-        email: str,
-        date_of_birth,
-        experience_id: int,
-        location: str,
-        weekly_availability: int,
-        preferred_modality: int,
-        career: str,
-        academic_cycle: int,
-        main_motivation: str,
-        description: str,
-        session: AsyncSession
-    ):
-        new_student = Student(
-            name=name,
-            email=email,
-            date_of_birth=date_of_birth,
-            experience_id=experience_id,
-            location=location,
-            weekly_availability=weekly_availability,
-            preferred_modality=preferred_modality,
-            career=career,
-            academic_cycle=academic_cycle,
-            main_motivation=main_motivation,
-            description=description
+class RegisterStudentUseCase:
+    def __init__(self, register_student_port: RegisterStudentPort, student_evaluator: StudentProfileEvaluator):
+        self.register_student_port = register_student_port
+        self.student_evaluator = student_evaluator
+
+    async def execute(self, student_data: dict) -> dict:
+        # Validar datos
+        if not await self.register_student_port.validate_student_data(student_data):
+            raise ValueError("Datos de estudiante inválidos")
+        
+        # Verificar email único
+        if await self.register_student_port.check_email_exists(student_data["email"]):
+            raise ValueError("El email ya está registrado")
+        
+        # Crear entidad de dominio
+        student = Student(
+            name=student_data["name"],
+            email=student_data["email"],
+            date_of_birth=student_data["date_of_birth"],
+            experience_id=student_data["experience_id"],
+            location=student_data["location"],
+            weekly_availability=student_data["weekly_availability"],
+            preferred_modality=student_data["preferred_modality"],
+            career=student_data["career"],
+            academic_cycle=student_data["academic_cycle"],
+            main_motivation=student_data["main_motivation"],
+            description=student_data["description"]
         )
-        session.add(new_student)
-        await session.commit()
-        await session.refresh(new_student)
-        return new_student
+        
+        # Registrar estudiante
+        saved_student = await self.register_student_port.register_student(student)
+        
+        # Evaluar perfil
+        evaluation = await self.student_evaluator.evaluate_student_profile(saved_student.id)
+        
+        return {
+            "student_id": saved_student.id,
+            "registration_success": True,
+            "profile_evaluation": evaluation
+        }

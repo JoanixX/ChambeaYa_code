@@ -3,6 +3,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infraestructure.database.connection import get_session
 from app.application.use_cases.register_company import RegisterCompanyUseCase
+from app.adapters.output.orm.repositories.company_repository_impl import CompanyRepositoryImpl
+from app.domain.services.company_needs_analyzer import CompanyNeedsAnalyzer
+from app.application.ports.register_company_port import RegisterCompanyPort
 from fastapi.responses import JSONResponse
 from .jwt_utils import create_access_token, verify_password
 from sqlalchemy.future import select
@@ -50,18 +53,66 @@ class CompanyCreate(BaseModel):
 
 router = APIRouter()
 
+class CompanyPortImpl(RegisterCompanyPort):
+    def __init__(self, session: AsyncSession):
+        self.session = session
+        self.company_repo = CompanyRepositoryImpl(session)
+
+    async def register_company(self, company):
+        return await self.company_repo.save(company)
+
+    async def validate_company_data(self, company_data: dict) -> bool:
+        # Validaciones básicas
+        required_fields = ['RUC', 'name', 'location', 'industry', 'area_id', 
+                         'contact_name', 'email', 'company_culture']
+        
+        for field in required_fields:
+            if field not in company_data or not company_data[field]:
+                return False
+        
+        # Validaciones específicas
+        if len(company_data['RUC']) != 11:  # RUC peruano
+            return False
+        
+        return True
+
+    async def check_ruc_exists(self, ruc: str) -> bool:
+        company = await self.company_repo.find_by_ruc(ruc)
+        return company is not None
+
+    async def check_email_exists(self, email: str) -> bool:
+        company = await self.company_repo.find_by_email(email)
+        return company is not None
+
 @router.post("/register/company")
 async def register_company(company: CompanyCreate, session: AsyncSession = Depends(get_session)):
-    use_case = RegisterCompanyUseCase()
-    new_company = await use_case.register(
-        RUC=company.RUC,
-        name=company.name,
-        location=company.location,
-        industry=company.industry,
-        area_id=company.area_id,
-        contact_name=company.contact_name,
-        email=company.email,
-        company_culture=company.company_culture,
-        session=session
-    )
-    return JSONResponse(content={"id": new_company.id, "email": new_company.email, "name": new_company.name})
+    try:
+        # Crear adaptadores
+        company_port = CompanyPortImpl(session)
+        company_analyzer = CompanyNeedsAnalyzer(company_port.company_repo, company_port)
+        
+        # Crear caso de uso
+        use_case = RegisterCompanyUseCase(company_port, company_analyzer)
+        
+        # Ejecutar caso de uso
+        result = await use_case.execute(company.dict())
+        
+        return JSONResponse(content=result)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+@router.get("/company/{company_id}/needs")
+async def get_company_needs(company_id: int, session: AsyncSession = Depends(get_session)):
+    try:
+        company_repo = CompanyRepositoryImpl(session)
+        company_analyzer = CompanyNeedsAnalyzer(company_repo, None)
+        
+        analysis = await company_analyzer.analyze_company_needs(company_id)
+        
+        return JSONResponse(content=analysis)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
