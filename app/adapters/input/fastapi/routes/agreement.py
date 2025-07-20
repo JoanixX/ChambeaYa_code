@@ -1,19 +1,20 @@
 from pydantic import BaseModel, Field, validator
 from datetime import date
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infraestructure.database.connection import get_session
 from app.application.use_cases.register_agreement import RegisterAgreementUseCase
 from app.adapters.output.orm.repositories.agreement_repository_impl import AgreementRepositoryImpl
-from app.domain.services.agreement_policy_checker import AgreementPolicyChecker
+from app.domain.services.register_agreement_service import RegisterAgreementService
 from app.application.ports.register_agreement_port import RegisterAgreementPort
 from fastapi.responses import JSONResponse
 
 class AgreementCreate(BaseModel):
     job_offer_id: int = Field(..., description="ID de la oferta de trabajo")
     student_id: int = Field(..., description="ID del estudiante")
-    start_date: date = Field(None, description="Fecha de inicio")
-    end_date: date = Field(None, description="Fecha de fin")
+    start_date: Optional[date] = Field(None, description="Fecha de inicio")
+    end_date: Optional[date] = Field(None, description="Fecha de fin")
 
     @validator('job_offer_id')
     def job_offer_id_positive(cls, v):
@@ -70,25 +71,16 @@ class AgreementPortImpl(RegisterAgreementPort):
             return agreement
         return None
 
-class AgreementPolicyCheckerImpl(AgreementPolicyChecker):
-    async def validate_agreement_policies(self, agreement_data: dict) -> bool:
-        # Validar políticas de negocio
-        # Por ejemplo: verificar que el estudiante no tenga demasiados acuerdos activos
-        # Verificar que la oferta de trabajo esté disponible
-        # Verificar que el estudiante cumpla con los requisitos de la oferta
-        
-        # Por ahora, retornamos True como validación básica
-        return True
-
 @router.post("/register/agreement")
 async def register_agreement(agreement: AgreementCreate, session: AsyncSession = Depends(get_session)):
     try:
         # Crear adaptadores
         agreement_port = AgreementPortImpl(session)
-        policy_checker = AgreementPolicyCheckerImpl()
+        agreement_repo = AgreementRepositoryImpl(session)
+        register_agreement_service = RegisterAgreementService(agreement_repo, agreement_port)
         
         # Crear caso de uso
-        use_case = RegisterAgreementUseCase(agreement_port, policy_checker)
+        use_case = RegisterAgreementUseCase(agreement_port, register_agreement_service)
         
         # Ejecutar caso de uso
         result = await use_case.execute(agreement.dict())

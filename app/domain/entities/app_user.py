@@ -1,16 +1,14 @@
-from sqlalchemy import Column, Integer, String, Enum
 import enum
-from app.infraestructure.database.base import Base
 
 class UserRole(enum.Enum):
     admin = 'admin'
     company = 'company'
     student = 'student'
 
-class AppUser(Base):
-    __tablename__ = 'app_user'
-    id = Column(Integer, primary_key=True)
-    email = Column(String(100), unique=True, nullable=False)
-    password_hash = Column(String(255), nullable=False)
-    role = Column(Enum(UserRole, name="user_role"), nullable=False)
-    related_id = Column(Integer, nullable=False)
+class AppUser:
+    def __init__(self, id: int, email: str, password_hash: str, role: UserRole, related_id: int):
+        self.id = id
+        self.email = email
+        self.password_hash = password_hash
+        self.role = role
+        self.related_id = related_id

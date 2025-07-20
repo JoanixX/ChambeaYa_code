@@ -1,7 +1,4 @@
-from sqlalchemy import Column, SmallInteger, String
-from app.infraestructure.database.base import Base
-
-class Interest(Base):
-    __tablename__ = 'interest'
-    id = Column(SmallInteger, primary_key=True)
-    name = Column(String(50), nullable=False)
+class Interest:
+    def __init__(self, id: int, name: str):
+        self.id = id
+        self.name = name

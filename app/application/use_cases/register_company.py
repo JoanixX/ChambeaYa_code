@@ -1,11 +1,11 @@
 from app.application.ports.register_company_port import RegisterCompanyPort
 from app.domain.entities.company import Company
-from app.domain.services.company_needs_analyzer import CompanyNeedsAnalyzer
+from app.domain.services.register_company_service import RegisterCompanyService
 
 class RegisterCompanyUseCase:
-    def __init__(self, register_company_port: RegisterCompanyPort, company_analyzer: CompanyNeedsAnalyzer):
+    def __init__(self, register_company_port: RegisterCompanyPort, register_company_service: RegisterCompanyService):
         self.register_company_port = register_company_port
-        self.company_analyzer = company_analyzer
+        self.register_company_service = register_company_service
 
     async def execute(self, company_data: dict) -> dict:
         # Validar datos
@@ -20,26 +20,15 @@ class RegisterCompanyUseCase:
         if await self.register_company_port.check_email_exists(company_data["email"]):
             raise ValueError("El email ya está registrado")
         
-        # Crear entidad de dominio
-        company = Company(
-            RUC=company_data["RUC"],
-            name=company_data["name"],
-            location=company_data["location"],
-            industry=company_data["industry"],
-            area_id=company_data["area_id"],
-            contact_name=company_data["contact_name"],
-            email=company_data["email"],
-            company_culture=company_data["company_culture"]
-        )
+        # Registrar empresa usando el servicio de dominio
+        company_id = await self.register_company_service.register_company(company_data)
         
-        # Registrar empresa
-        saved_company = await self.register_company_port.register_company(company)
-        
-        # Analizar necesidades
-        analysis = await self.company_analyzer.analyze_company_needs(saved_company.id)
+        # Verificar que la empresa se guardó correctamente
+        if not company_id:
+            raise ValueError("Error al guardar la empresa")
         
         return {
-            "company_id": saved_company.id,
+            "company_id": company_id,
             "registration_success": True,
-            "needs_analysis": analysis
+            "message": "Empresa registrada exitosamente"
         }

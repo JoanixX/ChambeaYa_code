@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from app.domain.entities.agreement import Agreement
+from typing import Optional
 
 class AgreementRepository(ABC):
     @abstractmethod
@@ -7,7 +8,7 @@ class AgreementRepository(ABC):
         pass
 
     @abstractmethod
-    async def find_by_id(self, agreement_id: int) -> Agreement:
+    async def find_by_id(self, agreement_id: int) -> Optional[Agreement]:
         pass
 
     @abstractmethod

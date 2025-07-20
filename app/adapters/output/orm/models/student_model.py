@@ -13,6 +13,6 @@ class StudentModel(Base):
     description = Column(String(200), nullable=False)
     weekly_availability = Column(SmallInteger, nullable=False)
     preferred_modality = Column(SmallInteger, nullable=False)
-    experience_id = Column(SmallInteger, ForeignKey('experience_detail.id'), nullable=False)
+    experience_id = Column(SmallInteger, nullable=True)  # Removido ForeignKey temporalmente
     date_of_birth = Column(Date, nullable=False)
     embedding = Column(JSON, nullable=True)

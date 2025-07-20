@@ -4,10 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.infraestructure.database.connection import get_session
 from app.application.use_cases.register_company import RegisterCompanyUseCase
 from app.adapters.output.orm.repositories.company_repository_impl import CompanyRepositoryImpl
-from app.domain.services.company_needs_analyzer import CompanyNeedsAnalyzer
+from app.domain.services.register_company_service import RegisterCompanyService
 from app.application.ports.register_company_port import RegisterCompanyPort
 from fastapi.responses import JSONResponse
-from .jwt_utils import create_access_token, verify_password
 from sqlalchemy.future import select
 from app.domain.entities.company import Company
 
@@ -89,10 +88,11 @@ async def register_company(company: CompanyCreate, session: AsyncSession = Depen
     try:
         # Crear adaptadores
         company_port = CompanyPortImpl(session)
-        company_analyzer = CompanyNeedsAnalyzer(company_port.company_repo, company_port)
+        company_repo = CompanyRepositoryImpl(session)
+        register_company_service = RegisterCompanyService(company_repo, company_port)
         
         # Crear caso de uso
-        use_case = RegisterCompanyUseCase(company_port, company_analyzer)
+        use_case = RegisterCompanyUseCase(company_port, register_company_service)
         
         # Ejecutar caso de uso
         result = await use_case.execute(company.dict())
@@ -100,19 +100,5 @@ async def register_company(company: CompanyCreate, session: AsyncSession = Depen
         return JSONResponse(content=result)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
-@router.get("/company/{company_id}/needs")
-async def get_company_needs(company_id: int, session: AsyncSession = Depends(get_session)):
-    try:
-        company_repo = CompanyRepositoryImpl(session)
-        company_analyzer = CompanyNeedsAnalyzer(company_repo, None)
-        
-        analysis = await company_analyzer.analyze_company_needs(company_id)
-        
-        return JSONResponse(content=analysis)
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")

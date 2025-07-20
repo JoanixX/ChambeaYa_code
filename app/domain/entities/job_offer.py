@@ -1,18 +1,17 @@
-from sqlalchemy import Column, Integer, SmallInteger, String, Date, ForeignKey, JSON
-from app.infraestructure.database.base import Base
+from sqlalchemy import Date
 
-class JobOffer(Base):
-    __tablename__ = 'job_offer'
-    id = Column(Integer, primary_key=True)
-    company_id = Column(Integer, ForeignKey('company.id'), nullable=False)
-    title = Column(String(60), nullable=False)
-    description = Column(String(200), nullable=False)
-    required_hours = Column(SmallInteger, nullable=False)
-    approximated_salary = Column(Integer, nullable=True)
-    duration = Column(SmallInteger, nullable=True)
-    start_date = Column(Date, nullable=True)
-    area_id = Column(SmallInteger, ForeignKey('area.id'), nullable=False)
-    experience_id = Column(SmallInteger, ForeignKey('experience_detail.id'), nullable=False)
-    modality = Column(SmallInteger, nullable=False)
-    requirements = Column(String(500), nullable=True)  # Nuevo campo agregado
-    embedding = Column(JSON, nullable=True)
+class JobOffer:
+    def __init__(self, id: int, company_id: int, title: str, description: str, required_hours: int, approximated_salary: int, duration: int, start_date: Date, area_id: int, experience_id: int, modality: int, requirements: str, embedding: dict):
+        self.id = id
+        self.company_id = company_id
+        self.title = title
+        self.description = description
+        self.required_hours = required_hours
+        self.approximated_salary = approximated_salary
+        self.duration = duration
+        self.start_date = start_date
+        self.area_id = area_id
+        self.experience_id = experience_id
+        self.modality = modality
+        self.requirements = requirements
+        self.embedding = embedding

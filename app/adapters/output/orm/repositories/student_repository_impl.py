@@ -3,6 +3,7 @@ from app.domain.entities.student import Student
 from app.adapters.output.orm.models.student_model import StudentModel
 from sqlalchemy.future import select
 from sqlalchemy import delete
+from typing import Optional
 
 class StudentRepositoryImpl(StudentRepository):
     def __init__(self, session):
@@ -19,16 +20,16 @@ class StudentRepositoryImpl(StudentRepository):
             description=student.description,
             weekly_availability=student.weekly_availability,
             preferred_modality=student.preferred_modality,
-            experience_id=student.experience_id,
+            experience_id=student.experience_id,  # Puede ser None
             date_of_birth=student.date_of_birth,
             embedding=student.embedding
         )
         self.session.add(model)
         await self.session.commit()
         await self.session.refresh(model)
-        return model
+        return model  # Retornar el modelo ORM directamente
 
-    async def find_by_id(self, student_id: int) -> Student:
+    async def find_by_id(self, student_id: int) -> Optional[Student]:
         result = await self.session.execute(select(StudentModel).where(StudentModel.id == student_id))
         model = result.scalar_one_or_none()
         if model:
@@ -49,7 +50,7 @@ class StudentRepositoryImpl(StudentRepository):
             )
         return None
 
-    async def find_by_email(self, email: str) -> Student:
+    async def find_by_email(self, email: str) -> Optional[Student]:
         result = await self.session.execute(select(StudentModel).where(StudentModel.email == email))
         model = result.scalar_one_or_none()
         if model:

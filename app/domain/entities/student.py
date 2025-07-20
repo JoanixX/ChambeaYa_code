@@ -1,18 +1,18 @@
-from sqlalchemy import Column, Integer, String, SmallInteger, Date, ForeignKey, JSON
-from app.infraestructure.database.base import Base
+from datetime import date
+from typing import Optional
 
-class Student(Base):
-    __tablename__ = 'student'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(50), nullable=False)
-    email = Column(String(50), unique=True, nullable=False)
-    career = Column(String(100), nullable=False)
-    academic_cycle = Column(SmallInteger, nullable=False)
-    location = Column(String(100), nullable=False)
-    main_motivation = Column(String(100), nullable=False)
-    description = Column(String(200), nullable=False)
-    weekly_availability = Column(SmallInteger, nullable=False)
-    preferred_modality = Column(SmallInteger, nullable=False)
-    experience_id = Column(SmallInteger, ForeignKey('experience_detail.id'), nullable=False)
-    date_of_birth = Column(Date, nullable=False)
-    embedding = Column(JSON, nullable=True)
+class Student:
+    def __init__(self, id: int, name: str, email: str, career: str, academic_cycle: int, location: str, main_motivation: str, description: str, weekly_availability: int, preferred_modality: int, experience_id: Optional[int], date_of_birth: date, embedding: dict):
+        self.id = id
+        self.name = name
+        self.email = email
+        self.career = career
+        self.academic_cycle = academic_cycle
+        self.location = location
+        self.main_motivation = main_motivation
+        self.description = description
+        self.weekly_availability = weekly_availability
+        self.preferred_modality = preferred_modality
+        self.experience_id = experience_id
+        self.date_of_birth = date_of_birth
+        self.embedding = embedding

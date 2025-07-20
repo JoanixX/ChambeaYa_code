@@ -3,6 +3,7 @@ from app.domain.entities.agreement import Agreement, AgreementStatus
 from app.adapters.output.orm.models.agreement_model import AgreementModel, AgreementStatus as AgreementStatusModel
 from sqlalchemy.future import select
 from sqlalchemy import delete
+from typing import Optional
 
 class AgreementRepositoryImpl(AgreementRepository):
     def __init__(self, session):
@@ -12,7 +13,7 @@ class AgreementRepositoryImpl(AgreementRepository):
         model = AgreementModel(
             job_offer_id=agreement.job_offer_id,
             student_id=agreement.student_id,
-            status=AgreementStatusModel(agreement.status.value),
+            status=agreement.status.value,  # Usar el valor directamente
             start_date=agreement.start_date,
             end_date=agreement.end_date
         )
@@ -21,7 +22,7 @@ class AgreementRepositoryImpl(AgreementRepository):
         await self.session.refresh(model)
         return model
 
-    async def find_by_id(self, agreement_id: int) -> Agreement:
+    async def find_by_id(self, agreement_id: int) -> Optional[Agreement]:
         result = await self.session.execute(select(AgreementModel).where(AgreementModel.id == agreement_id))
         model = result.scalar_one_or_none()
         if model:
@@ -29,7 +30,7 @@ class AgreementRepositoryImpl(AgreementRepository):
                 id=model.id,
                 job_offer_id=model.job_offer_id,
                 student_id=model.student_id,
-                status=AgreementStatus(model.status.value),
+                status=AgreementStatus(model.status),  # Convertir desde el valor
                 start_date=model.start_date,
                 end_date=model.end_date
             )
@@ -44,7 +45,7 @@ class AgreementRepositoryImpl(AgreementRepository):
                 id=model.id,
                 job_offer_id=model.job_offer_id,
                 student_id=model.student_id,
-                status=AgreementStatus(model.status.value),
+                status=AgreementStatus(model.status),  # Convertir desde el valor
                 start_date=model.start_date,
                 end_date=model.end_date
             ))
@@ -59,14 +60,14 @@ class AgreementRepositoryImpl(AgreementRepository):
                 id=model.id,
                 job_offer_id=model.job_offer_id,
                 student_id=model.student_id,
-                status=AgreementStatus(model.status.value),
+                status=AgreementStatus(model.status),  # Convertir desde el valor
                 start_date=model.start_date,
                 end_date=model.end_date
             ))
         return agreements
 
     async def find_active_agreements(self) -> list[Agreement]:
-        result = await self.session.execute(select(AgreementModel).where(AgreementModel.status == AgreementStatusModel.active))
+        result = await self.session.execute(select(AgreementModel).where(AgreementModel.status == "active"))
         models = result.scalars().all()
         agreements = []
         for model in models:
@@ -74,7 +75,7 @@ class AgreementRepositoryImpl(AgreementRepository):
                 id=model.id,
                 job_offer_id=model.job_offer_id,
                 student_id=model.student_id,
-                status=AgreementStatus(model.status.value),
+                status=AgreementStatus(model.status),  # Convertir desde el valor
                 start_date=model.start_date,
                 end_date=model.end_date
             ))
@@ -89,7 +90,7 @@ class AgreementRepositoryImpl(AgreementRepository):
                 id=model.id,
                 job_offer_id=model.job_offer_id,
                 student_id=model.student_id,
-                status=AgreementStatus(model.status.value),
+                status=AgreementStatus(model.status),  # Convertir desde el valor
                 start_date=model.start_date,
                 end_date=model.end_date
             ))
@@ -101,7 +102,7 @@ class AgreementRepositoryImpl(AgreementRepository):
         if model:
             model.job_offer_id = agreement.job_offer_id
             model.student_id = agreement.student_id
-            model.status = AgreementStatusModel(agreement.status.value)
+            model.status = agreement.status.value  # Usar el valor directamente
             model.start_date = agreement.start_date
             model.end_date = agreement.end_date
             await self.session.commit()

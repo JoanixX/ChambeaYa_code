@@ -1,7 +1,4 @@
-from sqlalchemy import Column, Integer, SmallInteger, ForeignKey
-from app.infraestructure.database.base import Base
-
-class StudentInterest(Base):
-    __tablename__ = 'student_interest'
-    student_id = Column(Integer, ForeignKey('student.id'), primary_key=True)
-    interest_id = Column(SmallInteger, ForeignKey('interest.id'), primary_key=True)
+class StudentInterest:
+    def __init__(self, student_id: int, interest_id: int):
+        self.student_id = student_id
+        self.interest_id = interest_id

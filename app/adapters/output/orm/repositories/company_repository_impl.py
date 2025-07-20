@@ -3,6 +3,7 @@ from app.domain.entities.company import Company
 from app.adapters.output.orm.models.company_model import CompanyModel
 from sqlalchemy.future import select
 from sqlalchemy import delete
+from typing import Optional
 
 class CompanyRepositoryImpl(CompanyRepository):
     def __init__(self, session):
@@ -22,9 +23,9 @@ class CompanyRepositoryImpl(CompanyRepository):
         self.session.add(model)
         await self.session.commit()
         await self.session.refresh(model)
-        return model
+        return model  # Retornar el modelo ORM directamente
 
-    async def find_by_id(self, company_id: int) -> Company:
+    async def find_by_id(self, company_id: int) -> Optional[Company]:
         result = await self.session.execute(select(CompanyModel).where(CompanyModel.id == company_id))
         model = result.scalar_one_or_none()
         if model:
@@ -41,7 +42,7 @@ class CompanyRepositoryImpl(CompanyRepository):
             )
         return None
 
-    async def find_by_ruc(self, ruc: str) -> Company:
+    async def find_by_ruc(self, ruc: str) -> Optional[Company]:
         result = await self.session.execute(select(CompanyModel).where(CompanyModel.RUC == ruc))
         model = result.scalar_one_or_none()
         if model:
@@ -58,7 +59,7 @@ class CompanyRepositoryImpl(CompanyRepository):
             )
         return None
 
-    async def find_by_email(self, email: str) -> Company:
+    async def find_by_email(self, email: str) -> Optional[Company]:
         result = await self.session.execute(select(CompanyModel).where(CompanyModel.email == email))
         model = result.scalar_one_or_none()
         if model:

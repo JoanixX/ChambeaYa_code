@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from app.domain.entities.company import Company
+from typing import Optional
 
 class CompanyRepository(ABC):
     @abstractmethod
@@ -7,15 +8,15 @@ class CompanyRepository(ABC):
         pass
 
     @abstractmethod
-    async def find_by_id(self, company_id: int) -> Company:
+    async def find_by_id(self, company_id: int) -> Optional[Company]:
         pass
 
     @abstractmethod
-    async def find_by_ruc(self, ruc: str) -> Company:
+    async def find_by_ruc(self, ruc: str) -> Optional[Company]:
         pass
 
     @abstractmethod
-    async def find_by_email(self, email: str) -> Company:
+    async def find_by_email(self, email: str) -> Optional[Company]:
         pass
 
     @abstractmethod
