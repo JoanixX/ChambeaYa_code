@@ -8,6 +8,7 @@ from app.application.use_cases.register_student import RegisterStudentUseCase
 from app.adapters.output.orm.repositories.student_repository_impl import StudentRepositoryImpl
 from app.domain.services.register_student_service import RegisterStudentService
 from app.application.ports.register_student_port import RegisterStudentPort
+from app.adapters.output.orm.models.experience_detail_model import ExperienceDetailModel
 from fastapi.responses import JSONResponse
 import logging
 
@@ -19,7 +20,7 @@ class StudentCreate(BaseModel):
     name: str = Field(..., description="Name of the student")
     email: EmailStr = Field(..., description="Email address of the student")
     date_of_birth: date = Field(..., description="Date of birth of the student")
-    experience_id: Optional[int] = Field(None, description="Experience ID (optional)")
+    experience_id: int = Field(..., description="Experience ID")
     location: str = Field(..., description="Location")
     weekly_availability: int = Field(..., description="Weekly availability")
     preferred_modality: int = Field(..., description="Preferred modality")
@@ -96,7 +97,7 @@ class StudentPortImpl(RegisterStudentPort):
         logger.info(f"Validando datos del estudiante: {student_data}")
         
         # Validaciones básicas
-        required_fields = ['name', 'email', 'date_of_birth', 'location', 
+        required_fields = ['name', 'email', 'date_of_birth', 'location', 'experience_id',
                          'weekly_availability', 'preferred_modality', 'career', 'academic_cycle', 
                          'main_motivation', 'description']
         
@@ -120,33 +121,6 @@ class StudentPortImpl(RegisterStudentPort):
     async def check_email_exists(self, email: str) -> bool:
         student = await self.student_repo.find_by_email(email)
         return student is not None
-
-@router.get("/register/student/example")
-async def get_student_example():
-    """Endpoint para mostrar un ejemplo del formato JSON esperado"""
-    example = {
-        "name": "Juan Pérez",
-        "email": "juan.perez@example.com",
-        "date_of_birth": "2000-01-15",
-        "experience_id": 1,  # Opcional por ahora
-        "location": "Lima, Perú",
-        "weekly_availability": 20,
-        "preferred_modality": 2,  # 1=Presencial, 2=Remoto, 3=Híbrido
-        "career": "Ingeniería de Sistemas",
-        "academic_cycle": 8,
-        "main_motivation": "Ganar experiencia profesional",
-        "description": "Estudiante de ingeniería con interés en desarrollo web y bases de datos"
-    }
-    return JSONResponse(content={
-        "message": "Ejemplo de formato JSON para registrar estudiante",
-        "example": example,
-        "notes": {
-            "preferred_modality": "1=Presencial, 2=Remoto, 3=Híbrido",
-            "weekly_availability": "Horas por semana (1-40)",
-            "academic_cycle": "Ciclo académico (1-12)",
-            "experience_id": "ID de experiencia (opcional por ahora)"
-        }
-    })
 
 @router.post("/register/student")
 async def register_student(request: Request, student: StudentCreate, session: AsyncSession = Depends(get_session)):

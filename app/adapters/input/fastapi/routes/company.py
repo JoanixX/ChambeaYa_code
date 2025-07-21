@@ -9,6 +9,7 @@ from app.application.ports.register_company_port import RegisterCompanyPort
 from fastapi.responses import JSONResponse
 from sqlalchemy.future import select
 from app.domain.entities.company import Company
+from app.adapters.output.orm.models.company_area_model import CompanyAreaModel
 
 class CompanyCreate(BaseModel):
     RUC: str = Field(..., description="RUC de la empresa")

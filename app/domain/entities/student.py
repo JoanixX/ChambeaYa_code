@@ -2,7 +2,12 @@ from datetime import date
 from typing import Optional
 
 class Student:
-    def __init__(self, id: int, name: str, email: str, career: str, academic_cycle: int, location: str, main_motivation: str, description: str, weekly_availability: int, preferred_modality: int, experience_id: Optional[int], date_of_birth: date, embedding: dict):
+    def __init__(self, id: int, name: str, 
+    email: str, career: str, academic_cycle: int, 
+    location: str, main_motivation: str, 
+    description: str, weekly_availability: int, 
+    preferred_modality: int, experience_id: Optional[int], 
+    date_of_birth: date, embedding: dict):
         self.id = id
         self.name = name
         self.email = email
