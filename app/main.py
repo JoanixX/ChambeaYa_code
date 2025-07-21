@@ -1,3 +1,6 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
 from fastapi import FastAPI
 from app.adapters.input.fastapi.routes.student import router as student_router, StudentCreate
 from app.adapters.input.fastapi.routes.company import router as company_router, CompanyCreate

@@ -1,3 +1,4 @@
+import os
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from typing import AsyncGenerator
 from sqlalchemy.orm import sessionmaker
@@ -5,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 #conexion a la base de datos PostgreSQL
 ## DATABASE_URL = "postgresql+asyncpg://postgres:etc100charmander@localhost:5432/chambeaya-db"
 #DATABASE_URL = "postgresql+asyncpg://admindbchambeaya:1qa.2ws.3ed.@db-postgresql-chambeaya.postgres.database.azure.com:5432/chambeaya-bd?ssl=require"
-DATABASE_URL = "postgresql+asyncpg://admindbchambeaya:1qa.2ws.3ed.@db-chambeaya.postgres.database.azure.com:5432/chambeaya-bd?ssl=require"
+DATABASE_URL = os.getenv("DATABASE_URL")
 ##CDATABASE_URL = "postgresql+asyncpg://admindbchambeaya%40db-postgresql-chambeaya:1qa.!QA.@db-postgresql-chambeaya.postgres.database.azure.com:5432/chambeaya-db?ssl=require"
 
 
