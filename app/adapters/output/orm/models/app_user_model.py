@@ -7,7 +7,7 @@ class UserRole(enum.Enum):
     company = 'company'
     student = 'student'
 
-class UserModel(Base):
+class AppUserModel(Base):
     __tablename__ = 'app_user'
     id = Column(Integer, primary_key=True)
     email = Column(String(100), unique=True, nullable=False)
