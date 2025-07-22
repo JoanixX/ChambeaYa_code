@@ -103,6 +103,8 @@ Para Windows:
 5) Una vez creado, entrar al venv desde la terminal 
 (venv\Scripts\Activate.ps1 -> en PowerShell)
 (venv\Scripts\activate.bat -> en cmd.exe)
+Para ejecutar el proyecto: 
+uvicorn app.main:app --port 8000 --reload
 
 Para Linux:
 5) Entrar al venv desde la terminal
