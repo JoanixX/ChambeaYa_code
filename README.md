@@ -115,7 +115,8 @@ Para Linux:
 ===========================================================================
 
 6) Instalar el fastAPI (pip install "fastapi[standard]")
-Además, ejecutar el proyecto: uvicorn app.main:app --port 8000 --reload
+Además, ejecutar el proyecto: 
+uvicorn app.main:app --port 8000 --reload
 
 7) verificar la instalación con (pip freeze)
 8) En el VSC, creamos un archivo main.py donde pondremos un script de prueba
