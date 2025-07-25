@@ -18,6 +18,20 @@ async def preprocess_all_job_offers(job_offers: list):
     response.raise_for_status()
     return response.json()
 
+async def preprocess_student(student: dict):
+    url = f"{IA_API_BASE_URL}/filter/student/preprocess_student"
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, json=student)
+    response.raise_for_status()
+    return response.json()
+
+async def preprocess_job_offer(job_offer: dict):
+    url = f"{IA_API_BASE_URL}/filter/job_offer/preprocess_job_offer"
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, json=job_offer)
+    response.raise_for_status()
+    return response.json()
+
 async def match_best_job_offers(student: dict, job_offers: list):
     url = f"{IA_API_BASE_URL}/aimodel/student/best_job_offers"
     async with httpx.AsyncClient() as client:

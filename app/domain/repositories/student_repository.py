@@ -7,6 +7,10 @@ async def get_all_students(session):
     result = await session.execute(select(Student))
     return result.scalars().all()
 
+async def get_student_by_id(session, student_id: int):
+    result = await session.execute(select(Student).where(Student.id == student_id))
+    return result.scalar_one_or_none()
+
 class StudentRepository(ABC):
     @abstractmethod
     async def save(self, student: Student):
