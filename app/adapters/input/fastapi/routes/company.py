@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field, EmailStr, validator
+from pydantic import Field, validator
+from app.adapters.input.fastapi.validators import BaseNotEmptyModel, BaseEmailModel
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infraestructure.database.connection import get_session
@@ -11,45 +12,19 @@ from sqlalchemy.future import select
 from app.domain.entities.company import Company
 from app.adapters.output.orm.models.area_model import AreaModel
 
-class CompanyCreate(BaseModel):
+class CompanyCreate(BaseNotEmptyModel, BaseEmailModel):
     RUC: str = Field(..., description="RUC de la empresa")
     name: str = Field(..., description="Nombre de la empresa")
     location: str = Field(..., description="Ubicación de la empresa")
     industry: str = Field(..., description="Industria de la empresa")
     area_id: int = Field(..., description="ID del área")
     contact_name: str = Field(..., description="Nombre del contacto")
-    email: EmailStr = Field(..., description="Correo electrónico de la empresa")
+    email: str = Field(..., description="Correo electrónico de la empresa")
     company_culture: str = Field(..., description="Cultura de la empresa")
 
-    @validator('name')
-    def name_not_empty(cls, v):
-        if not v or not v.strip():
-            raise ValueError('El nombre de la compañía no puede estar vacío')
-        return v
-
-    @validator('RUC')
-    def ruc_not_empty(cls, v):
-        if not v or not v.strip():
-            raise ValueError('El RUC no puede estar vacío')
-        return v
-
-    @validator('industry')
-    def industry_not_empty(cls, v):
-        if not v or not v.strip():
-            raise ValueError('La industria no puede estar vacía')
-        return v
-
-    @validator('company_culture')
-    def company_culture_not_empty(cls, v):
-        if not v or not v.strip():
-            raise ValueError('La cultura de la empresa no puede estar vacía')
-        return v
-
-    @validator('contact_name')
-    def contact_name_not_empty(cls, v):
-        if not v or not v.strip():
-            raise ValueError('El nombre de contacto no puede estar vacío')
-        return v
+    @validator('name', 'RUC', 'industry', 'company_culture', 'contact_name', 'location')
+    def not_empty_fields(cls, v, field):
+        return cls.not_empty(v, field.name)
 
 router = APIRouter()
 

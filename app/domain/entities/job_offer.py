@@ -1,7 +1,11 @@
-from sqlalchemy import Date
+from datetime import datetime
 
 class JobOffer:
-    def __init__(self, id: int, company_id: int, title: str, description: str, required_hours: int, approximated_salary: int, duration: int, start_date: Date, area_id: int, experience_id: int, modality: int, requirements: str, embedding: dict):
+    def __init__(self, id: int, company_id: int, title: str, 
+                 description: str, required_hours: int, 
+                 approximated_salary: int, duration: int, 
+                 start_date: datetime.date, area_id: int, experience_id: int, 
+                 modality: int, requirements: str, embedding: dict):
         self.id = id
         self.company_id = company_id
         self.title = title

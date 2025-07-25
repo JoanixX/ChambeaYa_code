@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, validator
+from app.adapters.input.fastapi.validators import not_in_future
 from datetime import date
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException

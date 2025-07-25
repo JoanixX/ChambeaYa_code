@@ -10,6 +10,7 @@ from app.adapters.input.fastapi.routes.agreement import router as agreement_rout
 from fastapi.middleware.cors import CORSMiddleware
 from app.adapters.input.fastapi.routes.match_job_student.router import router as match_job_student_router
 from app.adapters.input.fastapi.routes.filter_match.router import router as filter_match_router
+from app.adapters.input.fastapi.routes.job_offer import router as job_offer_router
 
 from app.domain.entities.experience_detail import ExperienceDetail
 from app.domain.entities.student import Student
@@ -27,6 +28,7 @@ app.include_router(match_job_student_router, prefix="/api")
 app.include_router(filter_match_router, prefix="/api")
 app.include_router(login_router, prefix="/api")
 app.include_router(register_router, prefix="/api")
+app.include_router(job_offer_router, prefix="/api")
 
 #configuracion para el cors
 origins = [

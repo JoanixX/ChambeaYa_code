@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, EmailStr, validator
+from app.adapters.input.fastapi.validators import not_empty, valid_email, not_in_future, in_range, positive_int, in_choices
 from datetime import date
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -29,59 +30,33 @@ class StudentCreate(BaseModel):
     main_motivation: str = Field(..., description="Main motivation")
     description: str = Field(..., description="Description")
 
-    @validator('name')
-    def name_not_empty(cls, v):
-        if not v or not v.strip():
-            raise ValueError('El nombre no puede estar vacío')
-        return v
+    @validator('name', 'location', 'career', 'main_motivation', 'description')
+    def not_empty_fields(cls, v, field):
+        return not_empty(v, field.name)
 
     @validator('email')
-    def email_not_empty(cls, v):
-        if not v or not v.strip():
-            raise ValueError('El email no puede estar vacío')
-        return v
+    def email_valid(cls, v):
+        return valid_email(v)
 
     @validator('date_of_birth')
     def dob_not_in_future(cls, v):
-        if v > date.today():
-            raise ValueError('La fecha de nacimiento no puede ser futura')
-        return v
-
-    @validator('location')
-    def location_not_empty(cls, v):
-        if not v or not v.strip():
-            raise ValueError('La ubicación no puede estar vacía')
-        return v
-
-    @validator('career')
-    def career_not_empty(cls, v):
-        if not v or not v.strip():
-            raise ValueError('La carrera no puede estar vacía')
-        return v
+        return not_in_future(v, 'La fecha de nacimiento')
 
     @validator('weekly_availability')
     def weekly_availability_valid(cls, v):
-        if v <= 0 or v > 40:
-            raise ValueError('La disponibilidad semanal debe estar entre 1 y 40 horas')
-        return v
+        return in_range(v, 1, 40, 'La disponibilidad semanal')
 
     @validator('academic_cycle')
     def academic_cycle_valid(cls, v):
-        if v <= 0 or v > 12:
-            raise ValueError('El ciclo académico debe estar entre 1 y 12')
-        return v
+        return in_range(v, 1, 12, 'El ciclo académico')
 
     @validator('experience_id')
     def experience_id_valid(cls, v):
-        if v is not None and v <= 0:
-            raise ValueError('El ID de experiencia debe ser positivo')
-        return v
+        return positive_int(v, 'El ID de experiencia')
 
     @validator('preferred_modality')
     def preferred_modality_valid(cls, v):
-        if v not in [1, 2, 3]:  # 1=Presencial, 2=Remoto, 3=Híbrido
-            raise ValueError('La modalidad preferida debe ser 1, 2 o 3')
-        return v
+        return in_choices(v, [1, 2, 3], 'La modalidad preferida')
 
 router = APIRouter()
 

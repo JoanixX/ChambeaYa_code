@@ -1,10 +1,24 @@
+from abc import ABC, abstractmethod
 from app.domain.entities.job_offer import JobOffer
-from sqlalchemy.future import select
+from typing import Optional
 
-async def get_all_job_offers(session):
-    result = await session.execute(select(JobOffer))
-    return result.scalars().all()
+class JobOfferRepository(ABC):
+    @abstractmethod
+    async def save(self, job_offer: JobOffer):
+        pass
 
-async def get_job_offer_by_id(session, job_offer_id: int):
-    result = await session.execute(select(JobOffer).where(JobOffer.id == job_offer_id))
-    return result.scalar_one_or_none()
+    @abstractmethod
+    async def find_by_id(self, job_offer_id: int) -> Optional[JobOffer]:
+        pass
+
+    @abstractmethod
+    async def get_all(self) -> list[JobOffer]:
+        pass
+
+    @abstractmethod
+    async def update(self, job_offer: JobOffer):
+        pass
+
+    @abstractmethod
+    async def delete(self, job_offer_id: int):
+        pass
