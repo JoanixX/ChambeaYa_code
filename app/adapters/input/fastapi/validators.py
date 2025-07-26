@@ -1,14 +1,10 @@
+
 from datetime import date
-from pydantic import EmailStr
 
 def not_empty(value: str, field_name: str = "Campo"):
     if not value or not str(value).strip():
         raise ValueError(f'{field_name} no puede estar vacío')
     return value
-
-def valid_email(value: str):
-    # Lanza error si no es email válido
-    return EmailStr.validate(value)
 
 def not_in_future(value: date, field_name: str = "Fecha"):
     if value > date.today():
@@ -34,3 +30,16 @@ def in_choices(value, choices, field_name: str = "Campo"):
     if value not in choices:
         raise ValueError(f'{field_name} debe ser uno de: {choices}')
     return value
+from pydantic import BaseModel, EmailStr
+
+class BaseNotEmptyModel(BaseModel):
+    @staticmethod
+    def not_empty(value, field_name):
+        if not value or not str(value).strip():
+            raise ValueError(f'{field_name} no puede estar vacío')
+        return value
+
+class BaseEmailModel(BaseModel):
+    @staticmethod
+    def valid_email(value):
+        return EmailStr.validate(value)

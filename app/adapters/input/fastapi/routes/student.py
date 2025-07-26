@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, EmailStr, validator
-from app.adapters.input.fastapi.validators import not_empty, valid_email, not_in_future, in_range, positive_int, in_choices
+from app.adapters.input.fastapi.validators import not_empty, not_in_future, in_range, positive_int, in_choices
 from datetime import date
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -30,32 +30,30 @@ class StudentCreate(BaseModel):
     main_motivation: str = Field(..., description="Main motivation")
     description: str = Field(..., description="Description")
 
-    @validator('name', 'location', 'career', 'main_motivation', 'description')
-    def not_empty_fields(cls, v, field):
-        return not_empty(v, field.name)
+    from pydantic import field_validator
 
-    @validator('email')
-    def email_valid(cls, v):
-        return valid_email(v)
+    @field_validator('name', 'location', 'career', 'main_motivation', 'description')
+    def not_empty_fields(cls, v, info):
+        return not_empty(v, info.field_name)
 
-    @validator('date_of_birth')
-    def dob_not_in_future(cls, v):
+    @field_validator('date_of_birth')
+    def dob_not_in_future(cls, v, info):
         return not_in_future(v, 'La fecha de nacimiento')
 
-    @validator('weekly_availability')
-    def weekly_availability_valid(cls, v):
+    @field_validator('weekly_availability')
+    def weekly_availability_valid(cls, v, info):
         return in_range(v, 1, 40, 'La disponibilidad semanal')
 
-    @validator('academic_cycle')
-    def academic_cycle_valid(cls, v):
+    @field_validator('academic_cycle')
+    def academic_cycle_valid(cls, v, info):
         return in_range(v, 1, 12, 'El ciclo académico')
 
-    @validator('experience_id')
-    def experience_id_valid(cls, v):
+    @field_validator('experience_id')
+    def experience_id_valid(cls, v, info):
         return positive_int(v, 'El ID de experiencia')
 
-    @validator('preferred_modality')
-    def preferred_modality_valid(cls, v):
+    @field_validator('preferred_modality')
+    def preferred_modality_valid(cls, v, info):
         return in_choices(v, [1, 2, 3], 'La modalidad preferida')
 
 router = APIRouter()
@@ -97,7 +95,7 @@ class StudentPortImpl(RegisterStudentPort):
         student = await self.student_repo.find_by_email(email)
         return student is not None
 
-@router.post("/register/student")
+@router.post("/register/student", tags=["Estudiante"])
 async def register_student(request: Request, student: StudentCreate, session: AsyncSession = Depends(get_session)):
     try:
         # Log del body recibido para debug
@@ -126,3 +124,33 @@ async def register_student(request: Request, student: StudentCreate, session: As
     except Exception as e:
         logger.error(f"Error interno del servidor: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+@router.get("/student/{student_id}", response_model=dict, tags=["Estudiante"])
+async def get_student_by_id(student_id: int, session: AsyncSession = Depends(get_session)):
+    student_repo = StudentRepositoryImpl(session)
+    student = await student_repo.find_by_id(student_id)
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    return student.__dict__
+
+@router.get("/student/all", response_model=list, tags=["Estudiante"])
+async def get_all_students(session: AsyncSession = Depends(get_session)):
+    student_repo = StudentRepositoryImpl(session)
+    students = await student_repo.get_all()
+    return [s.__dict__ for s in students]
+
+@router.put("/student/{student_id}", response_model=dict, tags=["Estudiante"])
+async def update_student(student_id: int, student: StudentCreate, session: AsyncSession = Depends(get_session)):
+    student_repo = StudentRepositoryImpl(session)
+    updated = await student_repo.update(student_id, student.dict())
+    if not updated:
+        raise HTTPException(status_code=404, detail="Student not found")
+    return updated.__dict__
+
+@router.delete("/student/{student_id}", response_model=dict, tags=["Estudiante"])
+async def delete_student(student_id: int, session: AsyncSession = Depends(get_session)):
+    student_repo = StudentRepositoryImpl(session)
+    deleted = await student_repo.delete(student_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Student not found")
+    return {"detail": "Student deleted"}

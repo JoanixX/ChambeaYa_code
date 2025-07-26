@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infraestructure.database.connection import get_session
-from app.domain.repositories.job_offer_repository import get_all_job_offers
-from app.domain.repositories.job_offer_repository import get_job_offer_by_id
+from app.adapters.output.orm.repositories.job_offer_repository_impl import get_all_job_offers_impl as get_all_job_offers
+from app.adapters.output.orm.repositories.job_offer_repository_impl import get_job_offer_by_id_impl as get_job_offer_by_id
 from app.domain.entities.job_offer import JobOffer
 from app.domain.services.preprocess_job_offer_service import PreprocessJobOfferService
 from fastapi import Body
@@ -10,7 +10,7 @@ from typing import List
 
 router = APIRouter()
 
-@router.post("/filter/job_offer/preprocess_all_job_offer")
+@router.post("/filter/job_offer/preprocess_all_job_offer", response_model=dict, tags=["AI Model"])
 async def preprocess_all_job_offer(session: AsyncSession = Depends(get_session)):
     job_offers: List[JobOffer] = await get_all_job_offers(session)
     service = PreprocessJobOfferService()
@@ -30,7 +30,7 @@ async def preprocess_all_job_offer(session: AsyncSession = Depends(get_session))
     return {"message": "Embeddings generados y guardados correctamente", "total": len(job_offers)}
 
 
-@router.post("/filter/job_offer/preprocess_job_offer")
+@router.post("/filter/job_offer/preprocess_job_offer", response_model=dict, tags=["AI Model"])
 async def preprocess_job_offer(job_offer_id: int = Body(..., embed=True), session: AsyncSession = Depends(get_session)):
     job_offer = await get_job_offer_by_id(session, job_offer_id)
     if not job_offer:

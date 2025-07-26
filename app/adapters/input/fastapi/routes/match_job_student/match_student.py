@@ -8,7 +8,7 @@ from app.domain.services.match_job_student_service import MatchJobStudentService
 
 router = APIRouter()
 
-@router.post("/aimodel/student/best_job_offers/{student_id}")
+@router.post("/aimodel/student/best_job_offers/{student_id}", response_model=dict, tags=["AI Model"])
 async def best_job_offers(student_id: int, session: AsyncSession = Depends(get_session)):
     result = await session.execute(select(Student).where(Student.id == student_id))
     student = result.scalar_one_or_none()

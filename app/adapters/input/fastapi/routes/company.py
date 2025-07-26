@@ -22,9 +22,11 @@ class CompanyCreate(BaseNotEmptyModel, BaseEmailModel):
     email: str = Field(..., description="Correo electrónico de la empresa")
     company_culture: str = Field(..., description="Cultura de la empresa")
 
-    @validator('name', 'RUC', 'industry', 'company_culture', 'contact_name', 'location')
-    def not_empty_fields(cls, v, field):
-        return cls.not_empty(v, field.name)
+    from pydantic import field_validator
+
+    @field_validator('name', 'RUC', 'industry', 'company_culture', 'contact_name', 'location')
+    def not_empty_fields(cls, v, info):
+        return cls.not_empty(v, info.field_name)
 
 router = APIRouter()
 
@@ -59,7 +61,7 @@ class CompanyPortImpl(RegisterCompanyPort):
         company = await self.company_repo.find_by_email(email)
         return company is not None
 
-@router.post("/register/company")
+@router.post("/register/company", response_model=dict, tags=["Company"])
 async def register_company(company: CompanyCreate, session: AsyncSession = Depends(get_session)):
     try:
         # Crear adaptadores
@@ -78,3 +80,33 @@ async def register_company(company: CompanyCreate, session: AsyncSession = Depen
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+@router.get("/company/{company_id}", response_model=dict, tags=["Company"])
+async def get_company_by_id(company_id: int, session: AsyncSession = Depends(get_session)):
+    company_repo = CompanyRepositoryImpl(session)
+    company = await company_repo.find_by_id(company_id)
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+    return company.__dict__
+
+@router.get("/company/all", response_model=list, tags=["Company"])
+async def get_all_companies(session: AsyncSession = Depends(get_session)):
+    company_repo = CompanyRepositoryImpl(session)
+    companies = await company_repo.get_all()
+    return [c.__dict__ for c in companies]
+
+@router.put("/company/{company_id}", response_model=dict, tags=["Company"])
+async def update_company(company_id: int, company: CompanyCreate, session: AsyncSession = Depends(get_session)):
+    company_repo = CompanyRepositoryImpl(session)
+    updated = await company_repo.update(company_id, company.dict())
+    if not updated:
+        raise HTTPException(status_code=404, detail="Company not found")
+    return updated.__dict__
+
+@router.delete("/company/{company_id}", response_model=dict, tags=["Company"])
+async def delete_company(company_id: int, session: AsyncSession = Depends(get_session)):
+    company_repo = CompanyRepositoryImpl(session)
+    deleted = await company_repo.delete(company_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Company not found")
+    return {"detail": "Company deleted"}

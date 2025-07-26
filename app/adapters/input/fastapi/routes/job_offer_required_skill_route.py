@@ -1,0 +1,58 @@
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import JSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.infraestructure.database.connection import get_session
+from app.domain.entities.job_offer_required_skill import JobOfferRequiredSkill
+from app.application.use_cases.job_offer_required_skill_use_case import JobOfferRequiredSkillUseCase
+from app.adapters.output.orm.repositories.job_offer_required_skill_repository_impl import JobOfferRequiredSkillRepositoryImpl
+from app.domain.services.job_offer_required_skill_service import JobOfferRequiredSkillService
+from app.application.ports.job_offer_required_skill_port import JobOfferRequiredSkillPort
+
+router = APIRouter()
+
+class JobOfferRequiredSkillPortImpl(JobOfferRequiredSkillPort):
+    def __init__(self, session: AsyncSession):
+        self.session = session
+        self.repository = JobOfferRequiredSkillRepositoryImpl(session)
+
+    async def get_skills_for_job_offer(self, job_offer_id: int):
+        return await self.repository.get_by_job_offer_id(job_offer_id)
+
+    async def add_required_skill(self, job_offer_required_skill: JobOfferRequiredSkill):
+        return await self.repository.add(job_offer_required_skill)
+
+    async def remove_required_skill(self, job_offer_required_skill_id: int):
+        await self.repository.remove(job_offer_required_skill_id)
+
+@router.get("/job_offer/{job_offer_id}/required_skills", response_model=list[dict], tags=["Job Offer Required Skill"])
+async def get_required_skills(job_offer_id: int, session: AsyncSession = Depends(get_session)):
+    try:
+        port = JobOfferRequiredSkillPortImpl(session)
+        service = JobOfferRequiredSkillService(port)
+        use_case = JobOfferRequiredSkillUseCase(port, service)
+        skills = await use_case.get_skills_for_job_offer(job_offer_id)
+        return JSONResponse(content=[skill.__dict__ for skill in skills])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+
+@router.post("/job_offer/required_skill", response_model=dict, tags=["Job Offer Required Skill"])
+async def add_required_skill(skill: JobOfferRequiredSkill, session: AsyncSession = Depends(get_session)):
+    try:
+        port = JobOfferRequiredSkillPortImpl(session)
+        service = JobOfferRequiredSkillService(port)
+        use_case = JobOfferRequiredSkillUseCase(port, service)
+        result = await use_case.add_required_skill(skill)
+        return JSONResponse(content=result.__dict__)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+
+@router.delete("/job_offer/required_skill/{required_skill_id}", tags=["Job Offer Required Skill"])
+async def remove_required_skill(required_skill_id: int, session: AsyncSession = Depends(get_session)):
+    try:
+        port = JobOfferRequiredSkillPortImpl(session)
+        service = JobOfferRequiredSkillService(port)
+        use_case = JobOfferRequiredSkillUseCase(port, service)
+        await use_case.remove_required_skill(required_skill_id)
+        return JSONResponse(content={"message": "Required skill removed"})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")

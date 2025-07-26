@@ -14,5 +14,5 @@ class JobOfferModel(Base):
     area_id = Column(Integer, ForeignKey('area.id'), nullable=False)
     experience_id = Column(Integer, ForeignKey('experience_detail.id'), nullable=False)
     modality = Column(SMALLINT, nullable=False)
-    requirements = Column(VARCHAR(200), nullable=False)
+    requirements = Column(VARCHAR(200), nullable=True)
     embedding = Column(JSON, nullable=True)

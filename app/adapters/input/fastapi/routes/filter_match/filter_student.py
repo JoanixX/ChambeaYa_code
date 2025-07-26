@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infraestructure.database.connection import get_session
 
-from app.domain.repositories.student_repository import get_all_students, get_student_by_id
+from app.adapters.output.orm.repositories.student_repository_impl import StudentRepositoryImpl
 from app.domain.entities.student import Student
 from typing import List
 from fastapi import Body
@@ -10,9 +10,10 @@ from app.domain.services.preprocess_student_service import PreprocessStudentServ
 
 router = APIRouter()
 
-@router.post("/filter/student/preprocess_all_student")
+@router.post("/filter/student/preprocess_all_student", response_model=dict, tags=["AI Model"])
 async def preprocess_all_student(session: AsyncSession = Depends(get_session)):
-    students: List[Student] = await get_all_students(session)
+    repo = StudentRepositoryImpl(session)
+    students: List[Student] = await repo.get_all()
     service = PreprocessStudentService()
     try:
         processed = await service.preprocess_all(students)
@@ -29,9 +30,10 @@ async def preprocess_all_student(session: AsyncSession = Depends(get_session)):
     await session.commit()
     return {"message": "Embedding generado y guardado correctamente", "total": len(students)}
 
-@router.post("/filter/student/preprocess_student")
+@router.post("/filter/student/preprocess_student", response_model=dict, tags=["AI Model"])
 async def preprocess_student(student_id: int = Body(..., embed=True), session: AsyncSession = Depends(get_session)):
-    student = await get_student_by_id(session, student_id)
+    repo = StudentRepositoryImpl(session)
+    student = await repo.find_by_id(student_id)
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
 

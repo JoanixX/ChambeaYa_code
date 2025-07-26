@@ -17,22 +17,26 @@ class AgreementCreate(BaseModel):
     start_date: Optional[date] = Field(None, description="Fecha de inicio")
     end_date: Optional[date] = Field(None, description="Fecha de fin")
 
-    @validator('job_offer_id')
-    def job_offer_id_positive(cls, v):
+    from pydantic import field_validator
+
+    @field_validator('job_offer_id')
+    def job_offer_id_positive(cls, v, info):
         if v <= 0:
             raise ValueError('El ID de la oferta de trabajo debe ser positivo')
         return v
 
-    @validator('student_id')
-    def student_id_positive(cls, v):
+    @field_validator('student_id')
+    def student_id_positive(cls, v, info):
         if v <= 0:
             raise ValueError('El ID del estudiante debe ser positivo')
         return v
 
-    @validator('end_date')
-    def end_date_after_start(cls, v, values):
-        if v and 'start_date' in values and values['start_date']:
-            if v <= values['start_date']:
+    @field_validator('end_date')
+    def end_date_after_start(cls, v, info):
+        # info.data contiene todos los valores del modelo
+        start_date = info.data.get('start_date') if info.data else None
+        if v and start_date:
+            if v <= start_date:
                 raise ValueError('La fecha de fin debe ser posterior a la fecha de inicio')
         return v
 
@@ -72,7 +76,7 @@ class AgreementPortImpl(RegisterAgreementPort):
             return agreement
         return None
 
-@router.post("/register/agreement")
+@router.post("/register/agreement", response_model=dict, tags=["Agreement"])
 async def register_agreement(agreement: AgreementCreate, session: AsyncSession = Depends(get_session)):
     try:
         # Crear adaptadores
@@ -92,7 +96,7 @@ async def register_agreement(agreement: AgreementCreate, session: AsyncSession =
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
-@router.get("/agreement/{agreement_id}")
+@router.get("/agreement/{agreement_id}", response_model=dict, tags=["Agreement"])
 async def get_agreement(agreement_id: int, session: AsyncSession = Depends(get_session)):
     try:
         agreement_repo = AgreementRepositoryImpl(session)
@@ -114,7 +118,7 @@ async def get_agreement(agreement_id: int, session: AsyncSession = Depends(get_s
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
-@router.get("/student/{student_id}/agreements")
+@router.get("/student/{student_id}/agreements", response_model=dict, tags=["Agreement"])
 async def get_student_agreements(student_id: int, session: AsyncSession = Depends(get_session)):
     try:
         agreement_repo = AgreementRepositoryImpl(session)
@@ -134,3 +138,33 @@ async def get_student_agreements(student_id: int, session: AsyncSession = Depend
         return JSONResponse(content={"agreements": agreements_data})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+@router.get("/agreement/{agreement_id}", response_model=dict, tags=["Agreement"])
+async def get_agreement_by_id(agreement_id: int, session: AsyncSession = Depends(get_session)):
+    agreement_repo = AgreementRepositoryImpl(session)
+    agreement = await agreement_repo.find_by_id(agreement_id)
+    if not agreement:
+        raise HTTPException(status_code=404, detail="Agreement not found")
+    return agreement.__dict__
+
+@router.get("/agreement/all", response_model=list, tags=["Agreement"])
+async def get_all_agreements(session: AsyncSession = Depends(get_session)):
+    agreement_repo = AgreementRepositoryImpl(session)
+    agreements = await agreement_repo.get_all()
+    return [a.__dict__ for a in agreements]
+
+@router.put("/agreement/{agreement_id}", response_model=dict, tags=["Agreement"])
+async def update_agreement(agreement_id: int, agreement: AgreementCreate, session: AsyncSession = Depends(get_session)):
+    agreement_repo = AgreementRepositoryImpl(session)
+    updated = await agreement_repo.update(agreement_id, agreement.dict())
+    if not updated:
+        raise HTTPException(status_code=404, detail="Agreement not found")
+    return updated.__dict__
+
+@router.delete("/agreement/{agreement_id}", response_model=dict, tags=["Agreement"])
+async def delete_agreement(agreement_id: int, session: AsyncSession = Depends(get_session)):
+    agreement_repo = AgreementRepositoryImpl(session)
+    deleted = await agreement_repo.delete(agreement_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Agreement not found")
+    return {"detail": "Agreement deleted"}
