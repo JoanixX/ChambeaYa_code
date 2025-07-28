@@ -7,6 +7,7 @@ from app.application.use_cases.job_offer_required_skill_use_case import JobOffer
 from app.adapters.output.orm.repositories.job_offer_required_skill_repository_impl import JobOfferRequiredSkillRepositoryImpl
 from app.domain.services.job_offer_required_skill_service import JobOfferRequiredSkillService
 from app.application.ports.job_offer_required_skill_port import JobOfferRequiredSkillPort
+from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -35,16 +36,18 @@ async def get_required_skills(job_offer_id: int, session: AsyncSession = Depends
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
 
+class JobOfferRequiredSkillCreate(BaseModel):
+    job_offer_id: int
+    skill_id: int
+
 @router.post("/job_offer/required_skill", response_model=dict, tags=["Job Offer Required Skill"])
-async def add_required_skill(skill: JobOfferRequiredSkill, session: AsyncSession = Depends(get_session)):
-    try:
-        port = JobOfferRequiredSkillPortImpl(session)
-        service = JobOfferRequiredSkillService(port)
-        use_case = JobOfferRequiredSkillUseCase(port, service)
-        result = await use_case.add_required_skill(skill)
-        return JSONResponse(content=result.__dict__)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+async def add_required_skill(skill: JobOfferRequiredSkillCreate, session: AsyncSession = Depends(get_session)):
+    port = JobOfferRequiredSkillPortImpl(session)
+    service = JobOfferRequiredSkillService(port)
+    use_case = JobOfferRequiredSkillUseCase(port, service)
+    skill_entity = JobOfferRequiredSkill(skill.job_offer_id, skill.skill_id)
+    result = await use_case.add_required_skill(skill_entity)
+    return JSONResponse(content=result.__dict__)
 
 @router.delete("/job_offer/required_skill/{required_skill_id}", tags=["Job Offer Required Skill"])
 async def remove_required_skill(required_skill_id: int, session: AsyncSession = Depends(get_session)):

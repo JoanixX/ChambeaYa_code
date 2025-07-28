@@ -3,5 +3,5 @@ from app.infraestructure.database.base import Base
 
 class JobOfferRequiredSkillModel(Base):
     __tablename__ = 'job_offer_required_skill'
-    job_offer_id = Column(Integer, ForeignKey('job_offer.id'), nullable=False)
-    skill_id = Column(Integer, ForeignKey('skill.id'), nullable=False)
+    job_offer_id = Column(Integer, ForeignKey('job_offer.id'), primary_key=True, nullable=False)
+    skill_id = Column(Integer, ForeignKey('skill.id'), primary_key=True, nullable=False)
