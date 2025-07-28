@@ -1,10 +1,10 @@
 from app.domain.entities.job_offer import JobOffer
 from app.domain.repositories.filter_match_repository import FilterMatchRepository
-from app.application.ports.run_filter_match_port import RunFilterMatchPort
+from app.application.ports.filter_match_port import FilterMatchPort
 from app.domain.entities.filter_match import FilterMatch
 
 class FilterMatchService:
-    def __init__(self, filter_match_repo: FilterMatchRepository, filter_match_port: RunFilterMatchPort):
+    def __init__(self, filter_match_repo: FilterMatchRepository, filter_match_port: FilterMatchPort):
         self.filter_match_repo = filter_match_repo
         self.filter_match_port = filter_match_port
 

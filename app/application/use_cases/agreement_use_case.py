@@ -1,10 +1,10 @@
-from app.application.ports.register_agreement_port import RegisterAgreementPort
+from app.application.ports.agreement_port import AgreementPort
 from app.domain.entities.agreement import Agreement, AgreementStatus
-from app.domain.services.register_agreement_service import RegisterAgreementService
+from app.domain.services.agreement_service import AgreementService
 from datetime import date
 
-class RegisterAgreementUseCase:
-    def __init__(self, register_agreement_port: RegisterAgreementPort, register_agreement_service: RegisterAgreementService):
+class AgreementUseCase:
+    def __init__(self, register_agreement_port: AgreementPort, register_agreement_service: AgreementService):
         self.register_agreement_port = register_agreement_port
         self.register_agreement_service = register_agreement_service
 

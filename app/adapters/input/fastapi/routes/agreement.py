@@ -5,10 +5,10 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infraestructure.database.connection import get_session
-from app.application.use_cases.register_agreement import RegisterAgreementUseCase
+from app.application.use_cases.agreement_use_case import AgreementUseCase
 from app.adapters.output.orm.repositories.agreement_repository_impl import AgreementRepositoryImpl
-from app.domain.services.register_agreement_service import RegisterAgreementService
-from app.application.ports.register_agreement_port import RegisterAgreementPort
+from app.domain.services.agreement_service import AgreementService
+from app.application.ports.agreement_port import AgreementPort
 from fastapi.responses import JSONResponse
 
 class AgreementCreate(BaseModel):
@@ -42,7 +42,7 @@ class AgreementCreate(BaseModel):
 
 router = APIRouter()
 
-class AgreementPortImpl(RegisterAgreementPort):
+class AgreementPortImpl(AgreementPort):
     def __init__(self, session: AsyncSession):
         self.session = session
         self.agreement_repo = AgreementRepositoryImpl(session)
@@ -82,10 +82,10 @@ async def register_agreement(agreement: AgreementCreate, session: AsyncSession =
         # Crear adaptadores
         agreement_port = AgreementPortImpl(session)
         agreement_repo = AgreementRepositoryImpl(session)
-        register_agreement_service = RegisterAgreementService(agreement_repo, agreement_port)
+        register_agreement_service = AgreementService(agreement_repo, agreement_port)
         
         # Crear caso de uso
-        use_case = RegisterAgreementUseCase(agreement_port, register_agreement_service)
+        use_case = AgreementUseCase(agreement_port, register_agreement_service)
         
         # Ejecutar caso de uso
         result = await use_case.execute(agreement.dict())

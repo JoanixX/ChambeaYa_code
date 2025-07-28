@@ -4,7 +4,6 @@ from app.adapters.output.orm.models.student_model import StudentModel
 from sqlalchemy.future import select
 from sqlalchemy import delete
 from typing import Optional
-from app.domain.repositories.student_repository import StudentRepository
 
 class StudentRepositoryImpl(StudentRepository):
     def __init__(self, session):
@@ -96,7 +95,7 @@ class StudentRepositoryImpl(StudentRepository):
             )
         return students
 
-    async def update(self, student: Student):
+    async def update(self, student: Student) -> Optional[Student]:
         result = await self.session.execute(select(StudentModel).where(StudentModel.id == student.id))
         model = result.scalar_one_or_none()
         if model:
@@ -114,7 +113,15 @@ class StudentRepositoryImpl(StudentRepository):
             model.embedding = student.embedding
             await self.session.commit()
             await self.session.refresh(model)
+            return student
+        return None
 
-    async def delete(self, student_id: int):
+    async def delete(self, student_id: int) -> bool:
+        result = await self.session.execute(select(StudentModel).where(StudentModel.id == student_id))
+        model = result.scalar_one_or_none()
+        if not model:
+            return False
+
         await self.session.execute(delete(StudentModel).where(StudentModel.id == student_id))
         await self.session.commit()
+        return True

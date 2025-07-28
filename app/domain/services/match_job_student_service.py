@@ -1,6 +1,6 @@
 from app.domain.entities.job_offer import JobOffer
 from app.domain.repositories.match_job_student_repository import MatchJobStudentRepository
-from app.application.ports.create_match_port import CreateMatchPort
+from app.application.ports.match_job_student_port import CreateMatchPort
 from app.domain.entities.match_job_student import MatchJobStudent
 from app.domain.entities.student import Student
 

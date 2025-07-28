@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from app.domain.entities.agreement import Agreement
 
-class RegisterAgreementPort(ABC):
+class AgreementPort(ABC):
     @abstractmethod
     async def register_agreement(self, agreement: Agreement) -> Agreement:
         pass

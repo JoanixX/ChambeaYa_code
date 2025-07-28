@@ -23,7 +23,7 @@ class CompanyRepositoryImpl(CompanyRepository):
         self.session.add(model)
         await self.session.commit()
         await self.session.refresh(model)
-        return model  # Retornar el modelo ORM directamente
+        return model
 
     async def find_by_id(self, company_id: int) -> Optional[Company]:
         result = await self.session.execute(select(CompanyModel).where(CompanyModel.id == company_id))
@@ -94,7 +94,7 @@ class CompanyRepositoryImpl(CompanyRepository):
             ))
         return companies
 
-    async def update(self, company: Company):
+    async def update(self, company: Company) -> Optional[Company]:
         result = await self.session.execute(select(CompanyModel).where(CompanyModel.id == company.id))
         model = result.scalar_one_or_none()
         if model:
@@ -108,7 +108,15 @@ class CompanyRepositoryImpl(CompanyRepository):
             model.company_culture = company.company_culture
             await self.session.commit()
             await self.session.refresh(model)
+            return company
+        return None
 
     async def delete(self, company_id: int):
+        result = await self.session.execute(select(CompanyModel).where(CompanyModel.id == company_id))
+        model = result.scalar_one_or_none()
+        if not model:
+            return False
+
         await self.session.execute(delete(CompanyModel).where(CompanyModel.id == company_id))
         await self.session.commit()
+        return True
