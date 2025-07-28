@@ -1,13 +1,12 @@
 from app.domain.entities.agreement import Agreement, AgreementStatus
 from app.domain.repositories.agreement_repository import AgreementRepository
-from app.application.ports.agreement_port import AgreementPort
 from typing import Optional, Dict, Any
 
 class AgreementService:
     def __init__(self, agreement_repo: AgreementRepository):
         self.agreement_repo = agreement_repo
 
-    async def register_agreement(self, agreement_data: dict):
+    async def register_agreement(self, agreement_data: Dict[str, Any]) -> int:
         agreement = self.agreement_entity(agreement_data)
         
         saved_model = await self.agreement_repo.save(agreement)
@@ -19,9 +18,21 @@ class AgreementService:
     async def get_agreement(self, agreement_id: int) -> Optional[Agreement]:
         return await self.agreement_repo.find_by_id(agreement_id)
     
+    async def find_active_agreement(self, job_offer_id: int, student_id: int) -> Optional[Agreement]:
+        agreements = await self.agreement_repo.find_active_agreement(job_offer_id, student_id)
+        return agreements[0] if agreements else None
+
+    async def get_student_agreements(self, student_id: int) -> list[Agreement]:
+        agreements = await self.agreement_repo.find_by_student_id(student_id)
+        return agreements
+    
+    async def get_job_offer_agreements(self, job_offer_id: int) -> list[Agreement]:
+        agreements = await self.agreement_repo.find_by_job_offer_id(job_offer_id)
+        return agreements
+
     async def get_all_agreements(self) -> list[Agreement]:
         return await self.agreement_repo.get_all()
-    
+
     async def update_agreement(self, agreement_id: int, agreement_data: Dict[str, Any]) -> Optional[Agreement]:
         existing_agreement = await self.agreement_repo.find_by_id(agreement_id)
         if not existing_agreement:
@@ -31,7 +42,7 @@ class AgreementService:
             id=agreement_id,
             job_offer_id=agreement_data.get("job_offer_id", existing_agreement.job_offer_id),
             student_id=agreement_data.get("student_id", existing_agreement.student_id),
-            status=agreement_data.get("status", existing_agreement.status),
+            status=AgreementStatus(agreement_data.get("status", existing_agreement.status.value)),
             start_date=agreement_data.get("start_date", existing_agreement.start_date),
             end_date=agreement_data.get("end_date", existing_agreement.end_date)
         )

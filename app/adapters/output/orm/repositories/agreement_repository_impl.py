@@ -66,20 +66,22 @@ class AgreementRepositoryImpl(AgreementRepository):
             ))
         return agreements
 
-    async def find_active_agreements(self) -> list[Agreement]:
-        result = await self.session.execute(select(AgreementModel).where(AgreementModel.status == "active"))
-        models = result.scalars().all()
-        agreements = []
-        for model in models:
-            agreements.append(Agreement(
+    async def find_active_agreement (self, job_offer_id: int, student_id: int) -> Optional[Agreement]:
+        result = await self.session.execute(select(AgreementModel).
+        where(AgreementModel.job_offer_id == job_offer_id, AgreementModel.student_id 
+        == student_id, AgreementModel.status == AgreementStatusModel.active))
+
+        model = result.scalar_one_or_none()
+        if model:
+            return Agreement(
                 id=model.id,
                 job_offer_id=model.job_offer_id,
                 student_id=model.student_id,
                 status=AgreementStatus(model.status),  # Convertir desde el valor
                 start_date=model.start_date,
                 end_date=model.end_date
-            ))
-        return agreements
+            )
+        return None
 
     async def get_all(self) -> list[Agreement]:
         result = await self.session.execute(select(AgreementModel))
@@ -107,7 +109,14 @@ class AgreementRepositoryImpl(AgreementRepository):
             model.end_date = agreement.end_date
             await self.session.commit()
             await self.session.refresh(model)
-
+            return agreement
+        return None
     async def delete(self, agreement_id: int):
+        result = await self.session.execute(select(AgreementModel).where(AgreementModel.id == agreement_id))
+        model = result.scalar_one_or_none()
+        if not model:
+            return False
+
         await self.session.execute(delete(AgreementModel).where(AgreementModel.id == agreement_id))
         await self.session.commit()
+        return True

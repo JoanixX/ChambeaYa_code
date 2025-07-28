@@ -20,7 +20,7 @@ class AgreementRepository(ABC):
         pass
 
     @abstractmethod
-    async def find_active_agreements(self) -> list[Agreement]:
+    async def find_active_agreement(self, job_offer_id: int, student_id: int) -> list[Agreement]:
         pass
 
     @abstractmethod
