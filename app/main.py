@@ -41,7 +41,7 @@ app.include_router(login_router, prefix="/api")
 app.include_router(register_router, prefix="/api")
 app.include_router(job_offer_router, prefix="/api")
 app.include_router(job_offer_required_skill_router, prefix="/api")
-app.include_router(skill_router, prefix="/api")
+app.include_router(skill_router, prefix="/api") 
 
 #configuracion para el cors
 origins = [

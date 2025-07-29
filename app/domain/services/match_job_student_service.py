@@ -1,25 +1,21 @@
 from app.domain.entities.job_offer import JobOffer
 from app.domain.repositories.match_job_student_repository import MatchJobStudentRepository
 from app.application.ports.match_job_student_port import CreateMatchPort
-from app.domain.entities.match_job_student import MatchJobStudent
 from app.domain.entities.student import Student
+from app.infraestructure.ai_client.ai_connection import match_best_job_offers, match_best_students
+from typing import List
 
 class MatchJobStudentService:
     def __init__(self, match_js_repo: MatchJobStudentRepository, match_js_port: CreateMatchPort):
         self.match_js_repo = match_js_repo
         self.match_js_port = match_js_port
 
-    async def matching_model(self, student: Student, job_offer: JobOffer):
-        result = await self.match_js_port.match_job_student(student, job_offer)
-        
-        match_job_student = MatchJobStudent(
-            match_job_student_id=result["id"],
-            student_id=result["student_id"],
-            job_offer_id=result["job_offer_id"],
-            score=result["score"],
-            match_date=result["match_date"],
-            rank=result["rank"]
-        )
+    async def match_best(self, student: Student, job_offers: List[JobOffer]):
+        student_data = {...}
+        job_offers_data = [{...} for job in job_offers]
+        return await match_best_job_offers(student_data, job_offers_data)
 
-        await self.match_js_repo.save(match_job_student)
-        return match_job_student
+    async def match_best_from_offer(self, job_offer: JobOffer, students: List[Student]):
+        job_offer_data = {...}
+        students_data = [{...} for s in students]
+        return await match_best_students(job_offer_data, students_data)

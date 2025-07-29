@@ -37,24 +37,9 @@ async def preprocess_student(student_id: int = Body(..., embed=True), session: A
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
 
-    student_data = {
-        "id": student.id,
-        "name": student.name,
-        "email": student.email,
-        "career": student.career,
-        "academic_cycle": student.academic_cycle,
-        "location": student.location,
-        "main_motivation": student.main_motivation,
-        "description": student.description,
-        "weekly_availability": student.weekly_availability,
-        "preferred_modality": student.preferred_modality,
-        "experience_id": student.experience_id,
-        "date_of_birth": student.date_of_birth.isoformat() if student.date_of_birth else None,
-        "embedding": None
-    }
-
+    service = PreprocessStudentService()
     try:
-        processed = await preprocess_all_student([student_data])
+        processed = await service.preprocess_student(student)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Error en la API de IA: {str(e)}")
 

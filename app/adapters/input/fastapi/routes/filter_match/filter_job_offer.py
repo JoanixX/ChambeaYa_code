@@ -38,7 +38,7 @@ async def preprocess_job_offer(job_offer_id: int = Body(..., embed=True), sessio
 
     service = PreprocessJobOfferService()
     try:
-        processed = await service.preprocess_all([job_offer])
+        processed = await service.preprocess_job_offer([job_offer])
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Error en la API de IA: {str(e)}")
 
