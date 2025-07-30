@@ -54,3 +54,4 @@ six==1.17.0
 #dependencias adicionales
 sqlalchemy
 asyncpg
+psycopg2-binary>=2.9.9
