@@ -22,3 +22,7 @@ class SkillRepository(ABC):
     @abstractmethod
     async def delete(self, skill_id: int):
         pass
+
+    @abstractmethod
+    async def get_name_by_id(self, skill_id: int) -> Optional[str]:
+        pass

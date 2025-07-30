@@ -14,10 +14,16 @@ async def get_all_skills_impl(session):
     models = result.scalars().all()
     return [skill_model_to_entity(m) for m in models]
 
+
 async def get_skill_by_id_impl(session, skill_id: int):
     result = await session.execute(select(SkillModel).where(SkillModel.id == skill_id))
     model = result.scalar_one_or_none()
     return skill_model_to_entity(model) if model else None
+
+async def get_skill_name_by_id_impl(session, skill_id: int) -> str:
+    result = await session.execute(select(SkillModel.name).where(SkillModel.id == skill_id))
+    name = result.scalar_one_or_none()
+    return name if name else None
 
 async def create_skill_impl(session, skill: Skill):
     model = SkillModel(name=skill.name)

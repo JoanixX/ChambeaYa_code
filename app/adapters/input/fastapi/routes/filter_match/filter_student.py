@@ -6,7 +6,10 @@ from app.adapters.output.orm.repositories.student_repository_impl import Student
 from app.domain.entities.student import Student
 from typing import List
 from fastapi import Body
+
 from app.domain.services.preprocess_student_service import PreprocessStudentService
+from sqlalchemy.future import select
+from app.adapters.output.orm.models.student_model import StudentModel
 
 router = APIRouter()
 
@@ -16,17 +19,23 @@ async def preprocess_all_student(session: AsyncSession = Depends(get_session)):
     students: List[Student] = await repo.get_all()
     service = PreprocessStudentService()
     try:
-        processed = await service.preprocess_all(students)
+        processed = await service.preprocess_all(students, session)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Error en la API de IA: {str(e)}")
 
     id_to_embedding = {item["student_id"]: item["embedding"] for item in processed}
 
+    # Save embeddings to DB
     for student in students:
         embedding = id_to_embedding.get(student.id)
-        if embedding:
-            student.embedding = embedding
-
+        if embedding is not None:
+            # Update the student model in DB
+            result = await session.execute(
+                select(StudentModel).where(StudentModel.id == student.id)
+            )
+            model = result.scalar_one_or_none()
+            if model:
+                model.embedding = embedding
     await session.commit()
     return {"message": "Embedding generado y guardado correctamente", "total": len(students)}
 
@@ -39,7 +48,7 @@ async def preprocess_student(student_id: int = Body(..., embed=True), session: A
 
     service = PreprocessStudentService()
     try:
-        processed = await service.preprocess_student(student)
+        processed = await service.preprocess_student(student, session)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Error en la API de IA: {str(e)}")
 

@@ -15,7 +15,7 @@ async def preprocess_all_job_offer(session: AsyncSession = Depends(get_session))
     job_offers: List[JobOffer] = await get_all_job_offers(session)
     service = PreprocessJobOfferService()
     try:
-        processed = await service.preprocess_all(job_offers)
+        processed = await service.preprocess_all(job_offers, session)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Error en la API de IA: {str(e)}")
 
@@ -38,13 +38,11 @@ async def preprocess_job_offer(job_offer_id: int = Body(..., embed=True), sessio
 
     service = PreprocessJobOfferService()
     try:
-        processed = await service.preprocess_job_offer([job_offer])
+        processed = await service.preprocess_job_offer(job_offer, session)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Error en la API de IA: {str(e)}")
 
-    embedding = None
-    if processed and isinstance(processed, list) and len(processed) > 0:
-        embedding = processed[0].get("embedding")
+    embedding = processed[0].get("embedding") if processed and isinstance(processed, list) and len(processed) > 0 else None
     if embedding is None:
         raise HTTPException(status_code=500, detail="No se pudo obtener el embedding")
 

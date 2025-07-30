@@ -14,8 +14,21 @@ from typing import List
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import date
+from app.domain.services.preprocess_job_offer_service import PreprocessJobOfferService
 
 router = APIRouter()
+
+@router.get("/job_offer/enriched/all", response_model=list, tags=["Job Offer"])
+async def get_all_job_offers_enriched(session: AsyncSession = Depends(get_session)):
+    try:
+        job_offers = await get_all_job_offers_impl(session)
+        preprocess_service = PreprocessJobOfferService()
+        enriched = await preprocess_service.preprocess_all(job_offers, session)
+        return enriched
+    except Exception as e:
+        import logging
+        logging.error(f"Error: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 class JobOfferCreate(BaseModel):
     company_id: int = Field(..., description="ID of the company")
@@ -28,7 +41,6 @@ class JobOfferCreate(BaseModel):
     area_id: int = Field(..., description="Area ID")
     experience_id: int = Field(..., description="Experience ID")
     modality: int = Field(..., description="Modality")
-    requirements: Optional[str] = Field(None, description="Requirements")
     embedding: Optional[dict] = Field(None, description="Embedding")
 
 @router.get("/job_offer/all", response_model=List[dict], tags=["Job Offer"])
@@ -48,7 +60,6 @@ async def get_all_job_offers_endpoint(session: AsyncSession = Depends(get_sessio
             "area_id": j.area_id,
             "experience_id": j.experience_id,
             "modality": j.modality,
-            "requirements": j.requirements,
             "embedding": j.embedding
         })
     return result
@@ -70,7 +81,6 @@ async def get_job_offer_by_id_endpoint(job_offer_id: int, session: AsyncSession 
         "area_id": job_offer.area_id,
         "experience_id": job_offer.experience_id,
         "modality": job_offer.modality,
-        "requirements": job_offer.requirements,
         "embedding": job_offer.embedding
     }
 
@@ -95,7 +105,6 @@ async def create_job_offer_endpoint(job_offer: JobOfferCreate, session: AsyncSes
         "area_id": created.area_id,
         "experience_id": created.experience_id,
         "modality": created.modality,
-        "requirements": created.requirements,
         "embedding": created.embedding
     }
 
@@ -117,7 +126,6 @@ async def update_job_offer_endpoint(job_offer_id: int, job_offer: JobOfferCreate
         "area_id": updated.area_id,
         "experience_id": updated.experience_id,
         "modality": updated.modality,
-        "requirements": updated.requirements,
         "embedding": updated.embedding
     }
 

@@ -5,7 +5,7 @@ class JobOffer:
                  description: str, required_hours: int, 
                  approximated_salary: int, duration: int, 
                  start_date: datetime.date, area_id: int, experience_id: int, 
-                 modality: int, requirements: str, embedding: dict):
+                 modality: int, embedding: dict):
         self.id = id
         self.company_id = company_id
         self.title = title
@@ -17,5 +17,4 @@ class JobOffer:
         self.area_id = area_id
         self.experience_id = experience_id
         self.modality = modality
-        self.requirements = requirements
         self.embedding = embedding

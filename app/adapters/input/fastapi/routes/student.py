@@ -1,8 +1,7 @@
-from pydantic import BaseModel, Field, EmailStr
+from app.domain.services.preprocess_student_service import PreprocessStudentService
+from fastapi import APIRouter, Depends, HTTPException, Request, Body
+from fastapi.responses import JSONResponse
 from app.adapters.input.fastapi.validators import not_empty, not_in_future, in_range, positive_int, in_choices
-from datetime import date
-from typing import Optional,Dict, Any
-from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infraestructure.database.connection import get_session
 from app.application.use_cases.student_use_case import StudentUseCase
@@ -10,13 +9,32 @@ from app.adapters.output.orm.repositories.student_repository_impl import Student
 from app.domain.services.student_service import StudentService
 from app.application.ports.student_port import StudentPort
 from app.domain.entities.student import Student
-from app.adapters.output.orm.models.experience_detail_model import ExperienceDetailModel
-from fastapi.responses import JSONResponse
+from app.domain.entities.skill import Skill
+from app.domain.entities.interest import Interest
+from app.adapters.output.orm.models.student_skill_model import StudentSkillModel
+from app.adapters.output.orm.models.student_interest_model import StudentInterestModel
+from app.adapters.output.orm.repositories.skill_repository_impl import get_skill_by_id_impl
+from sqlalchemy.future import select
+from pydantic import BaseModel, Field, EmailStr, field_validator
+from typing import Dict, Any, List, Optional
+from datetime import date
 import logging
 
+router = APIRouter()
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+async def get_skills_for_student(session: AsyncSession, student_id: int) -> List[Skill]:
+    skill_links_result = await session.execute(select(StudentSkillModel).where(StudentSkillModel.student_id == student_id))
+    skill_links = skill_links_result.scalars().all()
+    
+    skills = []
+    for link in skill_links:
+        skill = await get_skill_by_id_impl(session, link.skill_id)
+        if skill:
+            skills.append(skill)
+    return skills
 
 class StudentCreate(BaseModel):
     name: str = Field(..., description="Name of the student")
@@ -61,7 +79,7 @@ class StudentCreate(BaseModel):
     def valid_email(cls, v):
         return EmailStr._validate(v)
 
-router = APIRouter()
+
 
 class StudentPortImpl(StudentPort):
     def __init__(self, session: AsyncSession):
@@ -150,6 +168,21 @@ class StudentPortImpl(StudentPort):
         student = await self.student_repo.find_by_email(email)
         return student is not None
 
+@router.get("/student/enriched/all", response_model=list, tags=["Estudiante"])
+async def get_all_students_enriched(session: AsyncSession = Depends(get_session)):
+    try:
+        student_port = StudentPortImpl(session)
+        student_repo = StudentRepositoryImpl(session)
+        student_service = StudentService(student_repo)
+        use_case = StudentUseCase(student_port, student_service)
+        students = await use_case.get_all_students()
+        preprocess_service = PreprocessStudentService()
+        enriched = await preprocess_service.preprocess_all(students, session)
+        return enriched
+    except Exception as e:
+        logger.error(f"Error: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
 @router.post("/register/student", response_model=dict, tags=["Estudiante"])
 async def register_student(request: Request, student: StudentCreate, session: AsyncSession = Depends(get_session)):
     try:
@@ -200,7 +233,13 @@ async def get_all_students(session: AsyncSession = Depends(get_session)):
         use_case = StudentUseCase(student_port, student_service)
         students = await use_case.get_all_students()
 
-        return [s.__dict__ for s in students]
+        def serialize_student(s):
+            d = s.__dict__.copy()
+            if d.get("date_of_birth"):
+                d["date_of_birth"] = d["date_of_birth"].isoformat()
+            return d
+
+        return [serialize_student(s) for s in students]
     except Exception as e:
         logger.error(f"Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
@@ -236,3 +275,18 @@ async def delete_student(student_id: int, session: AsyncSession = Depends(get_se
     except Exception as e:
         logger.error(f"Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+@router.get("/student/{student_id}/skills", response_model=List[dict], tags=["Estudiante"])
+async def get_student_skills_endpoint(student_id: int, session: AsyncSession = Depends(get_session)):
+    skills = await get_skills_for_student(session, student_id)
+    if not skills:
+        return []
+    return [{"id": skill.id, "name": skill.name} for skill in skills]
+
+@router.get("/student/{student_id}/interests", response_model=List[dict], tags=["Estudiante"])
+async def get_student_interests_endpoint(student_id: int, session: AsyncSession = Depends(get_session)):
+    result = await session.execute(select(StudentInterestModel).where(StudentInterestModel.student_id == student_id))
+    interest_links = result.scalars().all()
+    if not interest_links:
+        return []
+    return [{"student_id": link.student_id, "interest_id": link.interest_id} for link in interest_links]

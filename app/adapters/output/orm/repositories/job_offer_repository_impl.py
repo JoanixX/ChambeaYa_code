@@ -18,7 +18,6 @@ def job_offer_model_to_entity(model: JobOfferModel) -> JobOffer:
         area_id=model.area_id,
         experience_id=model.experience_id,
         modality=model.modality,
-        requirements=model.requirements,
         embedding=model.embedding
     )
 
@@ -44,7 +43,6 @@ async def create_job_offer_impl(session, job_offer: JobOffer):
         area_id=job_offer.area_id,
         experience_id=job_offer.experience_id,
         modality=job_offer.modality,
-        requirements=job_offer.requirements,
         embedding=job_offer.embedding
     )
     session.add(model)
@@ -67,7 +65,6 @@ async def update_job_offer_impl(session, job_offer: JobOffer):
             area_id=job_offer.area_id,
             experience_id=job_offer.experience_id,
             modality=job_offer.modality,
-            requirements=job_offer.requirements,
             embedding=job_offer.embedding
         )
     )

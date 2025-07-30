@@ -1,4 +1,3 @@
-
 from datetime import date
 
 def not_empty(value: str, field_name: str = "Campo"):
