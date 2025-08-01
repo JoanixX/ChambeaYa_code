@@ -25,17 +25,6 @@ class JobOfferRequiredSkillPortImpl(JobOfferRequiredSkillPort):
     async def remove_required_skill(self, job_offer_required_skill_id: int):
         await self.repository.remove(job_offer_required_skill_id)
 
-@router.get("/job_offer/{job_offer_id}/required_skills", response_model=list[dict], tags=["Job Offer Required Skill"])
-async def get_required_skills(job_offer_id: int, session: AsyncSession = Depends(get_session)):
-    try:
-        port = JobOfferRequiredSkillPortImpl(session)
-        service = JobOfferRequiredSkillService(port)
-        use_case = JobOfferRequiredSkillUseCase(port, service)
-        skills = await use_case.get_skills_for_job_offer(job_offer_id)
-        return JSONResponse(content=[skill.__dict__ for skill in skills])
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
-
 class JobOfferRequiredSkillCreate(BaseModel):
     job_offer_id: int
     skill_id: int

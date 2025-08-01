@@ -1,10 +1,10 @@
-from datetime import datetime
+from datetime import date
 
 class JobOffer:
     def __init__(self, id: int, company_id: int, title: str, 
                  description: str, required_hours: int, 
                  approximated_salary: int, duration: int, 
-                 start_date: datetime.date, area_id: int, experience_id: int, 
+                 start_date: date, area_id: int, experience_id: int, 
                  modality: int, embedding: dict):
         self.id = id
         self.company_id = company_id

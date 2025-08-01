@@ -201,21 +201,20 @@ async def get_job_offer(job_offer_id: int, session: AsyncSession = Depends(get_s
         logger.error(f"Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
-@router.get("/job_offer/company/{company_id}", response_model=dict, tags=["Job Offer"])
-async def get_job_offer_by_company_id(company_id: int, session: AsyncSession = Depends(get_session)):
+@router.get("/company/{company_id}/job_offers", response_model=List[Dict], tags=["Job Offer"])
+async def get_company_job_offers(company_id: int, session: AsyncSession = Depends(get_session)):
     try:
         job_offer_port = JobOfferPortImpl(session)
         job_offer_repo = JobOfferRepositoryImpl(session)
         job_offer_service = JobOfferService(job_offer_repo)
         use_case = JobOfferUseCase(job_offer_port, job_offer_service)
-        job_offer = await use_case.get_job_offer_by_company_id(company_id)
-        if not job_offer:
-            raise HTTPException(status_code=404, detail="Job offer not found")
-        return job_offer.__dict__
+        job_offer = await use_case.get_company_job_offers(company_id)
+        
+        return [j.__dict__ for j in job_offer]
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"Error: {str(e)}", exc_info=True)
+        logger.error(f"Error al obtener las ofertas de trabajo de acuerdo a la compañia: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 @router.put("/job_offer/{job_offer_id}", response_model=dict, tags=["Job Offer"])
@@ -250,7 +249,7 @@ async def delete_job_offer_endpoint(job_offer_id: int, session: AsyncSession = D
         logger.error(f"Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
-@router.get("/job_offer/skills/{job_offer_id}", response_model=List[dict], tags=["Job Offer"])
+@router.get("/job_offer/{job_offer_id}/skills", response_model=List[dict], tags=["Job Offer"])
 async def get_skills_for_job_offer_endpoint(job_offer_id: int, session: AsyncSession = Depends(get_session)):
     skills = await get_skills_for_job_offer(session, job_offer_id)
     if not skills:

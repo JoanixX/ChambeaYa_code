@@ -8,7 +8,7 @@ class JobOfferUseCase:
         self.job_offer_port = job_offer_port
         self.job_offer_service = job_offer_service
 
-    async def register_job_offer(self, job_offer_data: Dict[str, Any]) -> JobOffer:
+    async def register_job_offer(self, job_offer_data: Dict[str, Any]) -> Dict[str, Any]:
         if not await self.job_offer_port.validate_job_offer_data(job_offer_data):
             raise ValueError("Invalid job offer data")
 
@@ -29,7 +29,7 @@ class JobOfferUseCase:
             raise ValueError(f"Oferta de trabajo con ID {job_offer_id} no encontrada")
         return job_offer
     
-    async def get_job_offer_by_company_id(self, company_id: int) -> JobOffer:
+    async def get_company_job_offers(self, company_id: int) -> List[JobOffer]:
         job_offer = await self.job_offer_port.get_job_offer_by_company_id(company_id)
         if not job_offer:
             raise ValueError(f"No se encontró oferta de trabajo para la empresa con ID {company_id}")

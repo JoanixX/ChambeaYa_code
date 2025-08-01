@@ -48,11 +48,12 @@ class JobOfferRepositoryImpl(JobOfferRepository):
             )
         return None
 
-    async def find_by_company_id(self, company_id: int) -> Optional[JobOffer]:
+    async def find_by_company_id(self, company_id: int) -> list[JobOffer]:
         result = await self.session.execute(select(JobOfferModel).where(JobOfferModel.company_id == company_id))
-        model = result.scalar_one_or_none()
-        if model:
-            return JobOffer(
+        models = result.scalars().all()
+        job_offers = []
+        for model in models:
+            job_offers.append(JobOffer(
                 id=model.id,
                 company_id=model.company_id,
                 title=model.title,
@@ -65,8 +66,8 @@ class JobOfferRepositoryImpl(JobOfferRepository):
                 experience_id=model.experience_id,
                 modality=model.modality,
                 embedding=model.embedding
-            )
-        return None
+            ))
+        return job_offers
 
     async def get_all(self) -> list[JobOffer]:
         result = await self.session.execute(select(JobOfferModel))
@@ -108,11 +109,11 @@ class JobOfferRepositoryImpl(JobOfferRepository):
             model.embedding = job_offer.embedding
             await self.session.commit()
             await self.session.refresh(model)
-            return model
+            return job_offer
         return None
 
     async def delete(self, job_offer_id: int):
-        result = await self.session.execute(delete(JobOfferModel).where(JobOfferModel.id == job_offer_id))
+        result = await self.session.execute(select(JobOfferModel).where(JobOfferModel.id == job_offer_id))
         model = result.scalar_one_or_none()
         if not model:
             return False
