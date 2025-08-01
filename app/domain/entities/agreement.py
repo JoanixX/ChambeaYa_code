@@ -2,7 +2,7 @@ import enum
 from typing import Optional
 from datetime import date
 
-class AgreementStatus(enum.Enum):
+class AgreementStatus(str, enum.Enum):
     pending = 'pending'
     active = 'active'
     completed = 'completed'

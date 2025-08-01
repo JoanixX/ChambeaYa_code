@@ -51,16 +51,16 @@ class StudentService:
     def student_entity(self, student_data: Dict[str, Any]) -> Student:
         return Student(
             id=0,  # Se asignará automáticamente por la base de datos
-            name=student_data["name"],
-            email=student_data["email"],
-            career=student_data["career"],
-            academic_cycle=student_data["academic_cycle"],
-            location=student_data["location"],
-            main_motivation=student_data["main_motivation"],
-            description=student_data["description"],
-            weekly_availability=student_data["weekly_availability"],
-            preferred_modality=student_data["preferred_modality"],
+            name=student_data.get("name", None),
+            email=student_data.get("email", None),
+            career=student_data.get("career", None),
+            academic_cycle=student_data.get("academic_cycle", None),
+            location=student_data.get("location", None),
+            main_motivation=student_data.get("main_motivation", None),
+            description=student_data.get("description", None),
+            weekly_availability=student_data.get("weekly_availability", None),
+            preferred_modality=student_data.get("preferred_modality", None),
             experience_id=student_data.get("experience_id", None),
-            date_of_birth=student_data["date_of_birth"],
+            date_of_birth=student_data.get("date_of_birth", None),
             embedding=student_data.get("embedding", {})
         )

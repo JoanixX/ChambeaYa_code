@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infraestructure.database.connection import get_session
-from app.adapters.output.orm.repositories.job_offer_repository_impl import get_all_job_offers_impl as get_all_job_offers
-from app.adapters.output.orm.repositories.job_offer_repository_impl import get_job_offer_by_id_impl as get_job_offer_by_id
+from app.adapters.output.orm.repositories.job_offer_repository_impl import JobOfferRepositoryImpl
 from app.domain.entities.job_offer import JobOffer
 from app.domain.services.preprocess_job_offer_service import PreprocessJobOfferService
 from fastapi import Body

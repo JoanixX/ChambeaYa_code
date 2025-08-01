@@ -13,7 +13,7 @@ class AgreementRepositoryImpl(AgreementRepository):
         model = AgreementModel(
             job_offer_id=agreement.job_offer_id,
             student_id=agreement.student_id,
-            status=agreement.status.value,  # Usar el valor directamente
+            status=agreement.status.value,
             start_date=agreement.start_date,
             end_date=agreement.end_date
         )

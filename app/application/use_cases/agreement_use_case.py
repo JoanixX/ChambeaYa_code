@@ -26,7 +26,6 @@ class AgreementUseCase:
         return {
             "agreement_id": agreement_id,
             "registration_success": True,
-            "status": "pending",
             "message": "Acuerdo registrado exitosamente"
         }
     

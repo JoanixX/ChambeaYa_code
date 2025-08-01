@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from app.domain.entities.student import Student
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
 class StudentPort(ABC):
     @abstractmethod
@@ -12,7 +12,7 @@ class StudentPort(ABC):
         pass
 
     @abstractmethod
-    async def get_all_students(self) -> list[Student]:
+    async def get_all_students(self) -> List[Student]:
         pass
 
     @abstractmethod

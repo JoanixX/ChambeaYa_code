@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from app.domain.entities.company import Company
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
 class CompanyPort(ABC):
     @abstractmethod
@@ -12,7 +12,7 @@ class CompanyPort(ABC):
         pass
 
     @abstractmethod
-    async def get_all_companies(self) -> list[Company]:
+    async def get_all_companies(self) -> List[Company]:
         pass
 
     @abstractmethod

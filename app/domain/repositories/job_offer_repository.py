@@ -12,6 +12,10 @@ class JobOfferRepository(ABC):
         pass
 
     @abstractmethod
+    async def find_by_company_id(self, company_id: int) -> Optional[JobOffer]:
+        pass
+
+    @abstractmethod
     async def get_all(self) -> list[JobOffer]:
         pass
 

@@ -1,18 +1,22 @@
-from pydantic import BaseModel, Field, EmailStr
-from app.adapters.input.fastapi.validators import not_empty, positive_int
-from typing import Optional,Dict, Any
-from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlalchemy.future import select
+from pydantic import BaseModel, Field, EmailStr, field_validator
+from typing import Dict, Any, List, Optional
+from datetime import date
+import logging
+from fastapi import APIRouter, Depends, HTTPException, Request, Body
+from fastapi.responses import JSONResponse
+from app.adapters.input.fastapi.validators import not_empty, not_in_future ,start_date_future, positive_int, in_choices
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infraestructure.database.connection import get_session
+
 from app.application.use_cases.company_use_case import CompanyUseCase
 from app.adapters.output.orm.repositories.company_repository_impl import CompanyRepositoryImpl
 from app.domain.services.company_service import CompanyService
 from app.application.ports.company_port import CompanyPort
 from app.domain.entities.company import Company
 from app.adapters.output.orm.models.area_model import AreaModel
-from fastapi.responses import JSONResponse
-import logging
 
+router = APIRouter()
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -41,8 +45,6 @@ class CompanyCreate(BaseModel):
     def experience_id_valid(cls, v, info):
         return positive_int(v, 'El ID del area')
 
-router = APIRouter()
-
 class CompanyPortImpl(CompanyPort):
     def __init__(self, session: AsyncSession):
         self.session = session
@@ -64,11 +66,11 @@ class CompanyPortImpl(CompanyPort):
         saved_company = await self.company_repo.save(company)
         return saved_company
     
-    async def get_company (self, company_id: int) -> Optional[Company]:
-        return await self.company_repo.find_by_id(company_id)
-    
     async def get_all_companies(self) -> list[Company]:
         return await self.company_repo.get_all()
+
+    async def get_company (self, company_id: int) -> Optional[Company]:
+        return await self.company_repo.find_by_id(company_id)
     
     async def update_company(self, company_id: int, company_data: Dict[str, Any]) -> Optional[Company]:
         existing_company = await self.company_repo.find_by_id(company_id)
@@ -142,6 +144,20 @@ async def register_company(request: Request, company: CompanyCreate, session: As
         logger.error(f"Error al registrar la empresa: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
+@router.get("/company/all", response_model=List[dict], tags=["Company"])
+async def get_all_companies(session: AsyncSession = Depends(get_session)):
+    try:
+        company_port = CompanyPortImpl(session)
+        company_repo = CompanyRepositoryImpl(session)
+        company_service = CompanyService(company_repo)
+        company_use_case = CompanyUseCase(company_port, company_service)
+        company = await company_use_case.get_all_companies()
+
+        return [comp.__dict__ for comp in company]
+    except Exception as e:
+        logger.error(f"Error al obtener empresas: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
 @router.get("/company/{company_id}", response_model=dict, tags=["Company"])
 async def get_company_by_id(company_id: int, session: AsyncSession = Depends(get_session)):
     try:
@@ -156,20 +172,6 @@ async def get_company_by_id(company_id: int, session: AsyncSession = Depends(get
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error al obtener la empresa: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
-@router.get("/company/all", response_model=list, tags=["Company"])
-async def get_all_companies(session: AsyncSession = Depends(get_session)):
-    try:
-        company_port = CompanyPortImpl(session)
-        company_repo = CompanyRepositoryImpl(session)
-        company_service = CompanyService(company_repo)
-        company_use_case = CompanyUseCase(company_port, company_service)
-        company = await company_use_case.get_all_companies()
-
-        return [comp.__dict__ for comp in company]
-    except Exception as e:
-        logger.error(f"Error al obtener empresas: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 @router.put("/company/{company_id}", response_model=dict, tags=["Company"])

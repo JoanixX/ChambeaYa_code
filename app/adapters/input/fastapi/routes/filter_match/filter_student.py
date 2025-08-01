@@ -1,12 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infraestructure.database.connection import get_session
-
 from app.adapters.output.orm.repositories.student_repository_impl import StudentRepositoryImpl
 from app.domain.entities.student import Student
 from typing import List
 from fastapi import Body
-
 from app.domain.services.preprocess_student_service import PreprocessStudentService
 from sqlalchemy.future import select
 from app.adapters.output.orm.models.student_model import StudentModel
@@ -25,11 +23,10 @@ async def preprocess_all_student(session: AsyncSession = Depends(get_session)):
 
     id_to_embedding = {item["student_id"]: item["embedding"] for item in processed}
 
-    # Save embeddings to DB
     for student in students:
         embedding = id_to_embedding.get(student.id)
         if embedding is not None:
-            # Update the student model in DB
+
             result = await session.execute(
                 select(StudentModel).where(StudentModel.id == student.id)
             )

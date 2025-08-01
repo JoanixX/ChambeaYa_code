@@ -10,6 +10,11 @@ def not_in_future(value: date, field_name: str = "Fecha"):
         raise ValueError(f'{field_name} no puede ser futura')
     return value
 
+def start_date_future(value: date, field_name: str = "Fecha de inicio"):
+    if value < date.today():
+        raise ValueError(f'La {field_name} no puede ser antigua')
+    return value
+
 def end_date_bigger(start_date: date, end_date: date, field_name: str = "Fecha de fin"):
     if end_date and start_date and end_date <= start_date:
         raise ValueError(f'{field_name} debe ser posterior a la fecha de inicio')

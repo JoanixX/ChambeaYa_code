@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, SmallInteger, ForeignKey, Enum, Date
 import enum
 from app.infraestructure.database.base import Base
 
-class AgreementStatus(enum.Enum):
+class AgreementStatus(str, enum.Enum):
     pending = 'pending'
     active = 'active'
     completed = 'completed'

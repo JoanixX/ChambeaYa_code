@@ -1,9 +1,15 @@
-from app.domain.services.preprocess_student_service import PreprocessStudentService
+from sqlalchemy.future import select
+from pydantic import BaseModel, Field, EmailStr, field_validator
+from typing import Dict, Any, List, Optional
+from datetime import date
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Request, Body
 from fastapi.responses import JSONResponse
 from app.adapters.input.fastapi.validators import not_empty, not_in_future, in_range, positive_int, in_choices
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infraestructure.database.connection import get_session
+
+from app.domain.services.preprocess_student_service import PreprocessStudentService
 from app.application.use_cases.student_use_case import StudentUseCase
 from app.adapters.output.orm.repositories.student_repository_impl import StudentRepositoryImpl
 from app.domain.services.student_service import StudentService
@@ -14,11 +20,6 @@ from app.domain.entities.interest import Interest
 from app.adapters.output.orm.models.student_skill_model import StudentSkillModel
 from app.adapters.output.orm.models.student_interest_model import StudentInterestModel
 from app.adapters.output.orm.repositories.skill_repository_impl import get_skill_by_id_impl
-from sqlalchemy.future import select
-from pydantic import BaseModel, Field, EmailStr, field_validator
-from typing import Dict, Any, List, Optional
-from datetime import date
-import logging
 
 router = APIRouter()
 # Configurar logging
@@ -79,8 +80,6 @@ class StudentCreate(BaseModel):
     def valid_email(cls, v):
         return EmailStr._validate(v)
 
-
-
 class StudentPortImpl(StudentPort):
     def __init__(self, session: AsyncSession):
         self.session = session
@@ -110,7 +109,7 @@ class StudentPortImpl(StudentPort):
     async def get_student(self, student_id: int) -> Optional[Student]:
         return await self.student_repo.find_by_id(student_id)
 
-    async def get_all_students(self) -> list[Student]:
+    async def get_all_students(self) -> List[Student]:
         return await self.student_repo.get_all()
 
     async def update_student(self, student_id: int, student_data: Dict[str, Any]) -> Optional[Student]:
@@ -168,21 +167,6 @@ class StudentPortImpl(StudentPort):
         student = await self.student_repo.find_by_email(email)
         return student is not None
 
-@router.get("/student/enriched/all", response_model=list, tags=["Estudiante"])
-async def get_all_students_enriched(session: AsyncSession = Depends(get_session)):
-    try:
-        student_port = StudentPortImpl(session)
-        student_repo = StudentRepositoryImpl(session)
-        student_service = StudentService(student_repo)
-        use_case = StudentUseCase(student_port, student_service)
-        students = await use_case.get_all_students()
-        preprocess_service = PreprocessStudentService()
-        enriched = await preprocess_service.preprocess_all(students, session)
-        return enriched
-    except Exception as e:
-        logger.error(f"Error: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
 @router.post("/register/student", response_model=dict, tags=["Estudiante"])
 async def register_student(request: Request, student: StudentCreate, session: AsyncSession = Depends(get_session)):
     try:
@@ -208,23 +192,7 @@ async def register_student(request: Request, student: StudentCreate, session: As
         logger.error(f"Error interno del servidor: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
-@router.get("/student/{student_id}", response_model=dict, tags=["Estudiante"])
-async def get_student_by_id(student_id: int, session: AsyncSession = Depends(get_session)):
-    try:
-        student_port = StudentPortImpl(session)
-        student_repo = StudentRepositoryImpl(session)
-        student_service = StudentService(student_repo)
-        use_case = StudentUseCase(student_port, student_service)
-        student = await use_case.get_student(student_id)
-
-        return student.__dict__
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        logger.error(f"Error: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
-
-@router.get("/student/all", response_model=list, tags=["Estudiante"])
+@router.get("/student/all", response_model=List[dict], tags=["Estudiante"])
 async def get_all_students(session: AsyncSession = Depends(get_session)):
     try:
         student_port = StudentPortImpl(session)
@@ -240,6 +208,22 @@ async def get_all_students(session: AsyncSession = Depends(get_session)):
             return d
 
         return [serialize_student(s) for s in students]
+    except Exception as e:
+        logger.error(f"Error: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+@router.get("/student/{student_id}", response_model=dict, tags=["Estudiante"])
+async def get_student_by_id(student_id: int, session: AsyncSession = Depends(get_session)):
+    try:
+        student_port = StudentPortImpl(session)
+        student_repo = StudentRepositoryImpl(session)
+        student_service = StudentService(student_repo)
+        use_case = StudentUseCase(student_port, student_service)
+        student = await use_case.get_student(student_id)
+
+        return student.__dict__
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         logger.error(f"Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
