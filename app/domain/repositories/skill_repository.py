@@ -14,11 +14,7 @@ class SkillRepository(ABC):
     @abstractmethod
     async def get_all(self) -> list[Skill]:
         pass
-
-    @abstractmethod
-    async def update(self, skill: Skill):
-        pass
-
+    
     @abstractmethod
     async def delete(self, skill_id: int):
         pass

@@ -2,7 +2,7 @@ from datetime import datetime
 
 class MatchJobStudent:
     def __init__(self, id: int, student_id: int, job_offer_id: int, 
-                 score: float, match_date: datetime.date, rank: int):
+                 score: float, match_date: datetime, rank: int):
         self.id = id
         self.student_id = student_id
         self.job_offer_id = job_offer_id

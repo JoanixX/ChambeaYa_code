@@ -4,13 +4,13 @@ from app.domain.entities.job_offer_required_skill import JobOfferRequiredSkill
 
 class JobOfferRequiredSkillPort(ABC):
     @abstractmethod
-    async def get_skills_for_job_offer(self, job_offer_id: int) -> List[JobOfferRequiredSkill]:
+    async def get_job_offer_required_skills(self, job_offer_id: int) -> List[JobOfferRequiredSkill]:
         pass
 
     @abstractmethod
-    async def add_required_skill(self, job_offer_required_skill: JobOfferRequiredSkill) -> JobOfferRequiredSkill:
+    async def add_job_offer_required_skill(self, job_offer_required_skill: JobOfferRequiredSkill) -> JobOfferRequiredSkill:
         pass
 
     @abstractmethod
-    async def remove_required_skill(self, job_offer_required_skill_id: int) -> None:
+    async def delete_job_offer_required_skill(self, job_offer_id: int, skill_id: int) -> bool:
         pass

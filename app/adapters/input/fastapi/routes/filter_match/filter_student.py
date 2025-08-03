@@ -5,7 +5,7 @@ from app.adapters.output.orm.repositories.student_repository_impl import Student
 from app.domain.entities.student import Student
 from typing import List
 from fastapi import Body
-from app.domain.services.preprocess_student_service import PreprocessStudentService
+from app.domain.services.filter_match_service import FilterMatchService
 from sqlalchemy.future import select
 from app.adapters.output.orm.models.student_model import StudentModel
 
@@ -13,20 +13,21 @@ router = APIRouter()
 
 @router.post("/filter/student/preprocess_all_student", response_model=dict, tags=["AI Model"])
 async def preprocess_all_student(session: AsyncSession = Depends(get_session)):
+    from app.domain.services.student_service import StudentService
     repo = StudentRepositoryImpl(session)
-    students: List[Student] = await repo.get_all()
-    service = PreprocessStudentService()
+    student_service = StudentService(repo)
+    service = FilterMatchService(None)
     try:
-        processed = await service.preprocess_all(students, session)
+        processed = await service.preprocess_all_students(student_service)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Error en la API de IA: {str(e)}")
 
+    students: List[Student] = await repo.get_all()
     id_to_embedding = {item["student_id"]: item["embedding"] for item in processed}
 
     for student in students:
         embedding = id_to_embedding.get(student.id)
         if embedding is not None:
-
             result = await session.execute(
                 select(StudentModel).where(StudentModel.id == student.id)
             )
@@ -43,7 +44,7 @@ async def preprocess_student(student_id: int = Body(..., embed=True), session: A
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
 
-    service = PreprocessStudentService()
+    service = FilterMatchService()
     try:
         processed = await service.preprocess_student(student, session)
     except Exception as e:

@@ -4,6 +4,9 @@ from typing import Optional
 
 class JobOfferRepository(ABC):
     @abstractmethod
+    async def get_enriched_job_offers(self, session) -> list:
+        pass
+    @abstractmethod
     async def save(self, job_offer: JobOffer):
         pass
 

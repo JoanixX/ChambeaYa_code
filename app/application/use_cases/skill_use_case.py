@@ -1,22 +1,49 @@
 from app.domain.entities.skill import Skill
-from app.domain.repositories.skill_repository import SkillRepository
-from typing import Optional, List
+from app.application.ports.skill_port import SkillPort
+from app.domain.services.skill_service import SkillService
+from typing import Optional, List, Dict, Any
 
 class SkillUseCase:
-    def __init__(self, skill_repository: SkillRepository):
-        self.skill_repository = skill_repository
+    def __init__(self, skill_port: SkillPort, skill_service: SkillService):
+        self.skill_port = skill_port
+        self.skill_service = skill_service
 
-    async def get_by_id(self, skill_id: int) -> Optional[Skill]:
-        return await self.skill_repository.find_by_id(skill_id)
+    async def register_skill(self, skill_data: Dict[str, Any]) -> int:
+        skill_id = await self.skill_service.register_skill(skill_data)
 
-    async def get_all(self) -> List[Skill]:
-        return await self.skill_repository.get_all()
+        if not skill_id:
+            raise ValueError("Error al guardar el skill")
 
-    async def create(self, skill: Skill) -> Optional[Skill]:
-        return await self.skill_repository.save(skill)
+        return {
+            "skill_id": skill_id,
+            "registration_success": True,
+            "message": "Skill registrado exitosamente"
+        }
 
-    async def update(self, skill: Skill) -> Optional[Skill]:
-        return await self.skill_repository.update(skill)
+    async def get_all_skills(self) -> List[Skill]:
+        return await self.skill_port.get_all_skills()
+    
+    async def get_skill(self, skill_id: int) -> Skill:
+        skill = await self.skill_port.get_skill(skill_id)
+        if not skill:
+            raise ValueError(f"Skill con ID {skill_id} no encontrado")
+        return skill
+    
+    async def delete_skill(self, skill_id: int) -> Dict[str, Any]:
+        skill = await self.skill_port.get_skill(skill_id)
+        if not skill:
+            raise ValueError(f"Skill con ID {skill_id} no encontrado")
 
-    async def delete(self, skill_id: int):
-        await self.skill_repository.delete(skill_id)
+        success = await self.skill_port.delete_skill(skill_id)
+        if not success:
+            raise ValueError(f"Error al eliminar skill con ID {skill_id}")
+
+        return {
+            "message": "Skill eliminado exitosamente"
+        }
+    
+    async def get_skill_name_by_id(self, skill_id: int) -> Optional[str]:
+        skill_name = await self.skill_port.get_skill_name_by_id(skill_id)
+        if not skill_name:
+            raise ValueError(f"Skill con ID {skill_id} no encontrado")
+        return skill_name

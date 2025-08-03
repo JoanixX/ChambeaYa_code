@@ -4,10 +4,59 @@ from app.adapters.output.orm.models.student_model import StudentModel
 from sqlalchemy.future import select
 from sqlalchemy import delete
 from typing import Optional
+from app.adapters.output.orm.models.student_skill_model import StudentSkillModel
+from app.adapters.output.orm.models.student_interest_model import StudentInterestModel
+from app.adapters.output.orm.repositories.experience_detail_repository_impl import get_experience_name_by_id_impl
+from app.adapters.output.orm.models.interest_model import InterestModel
 
 class StudentRepositoryImpl(StudentRepository):
     def __init__(self, session):
         self.session = session
+
+    async def get_enriched_students(self, session) -> list:
+        students_result = await session.execute(select(StudentModel))
+        student_models = students_result.scalars().all()
+        enriched_students = []
+        for s in student_models:
+            experience_name = None
+            if s.experience_id:
+                experience_name = await get_experience_name_by_id_impl(session, s.experience_id)
+
+            skill_links_result = await session.execute(select(StudentSkillModel).where(StudentSkillModel.student_id == s.id))
+            skill_links = skill_links_result.scalars().all()
+            skills = []
+            for link in skill_links:
+                skill = await get_skill_by_id_impl(session, link.skill_id)
+                if skill:
+                    skills.append({"name": skill.name})
+
+            interest_links_result = await session.execute(select(StudentInterestModel).where(StudentInterestModel.student_id == s.id))
+            interest_links = interest_links_result.scalars().all()
+            interests = []
+            for link in interest_links:
+                interest_result = await session.execute(select(InterestModel).where(InterestModel.id == link.interest_id))
+                interest_obj = interest_result.scalar_one_or_none()
+                if interest_obj:
+                    interests.append({"name": interest_obj.name})
+            enriched_students.append({
+                "id": s.id,
+                "name": s.name,
+                "email": s.email,
+                "career": s.career,
+                "academic_cycle": s.academic_cycle,
+                "location": s.location,
+                "main_motivation": s.main_motivation,
+                "description": s.description,
+                "weekly_availability": s.weekly_availability,
+                "preferred_modality": s.preferred_modality,
+                "experience": experience_name,
+                "experience_id": s.experience_id,
+                "skills": skills,
+                "interests": interests,
+                "date_of_birth": s.date_of_birth.isoformat() if s.date_of_birth else None,
+                "embedding": s.embedding
+            })
+        return enriched_students
 
     async def save(self, student: Student):
         model = StudentModel(

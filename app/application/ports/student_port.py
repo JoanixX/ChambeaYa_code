@@ -4,6 +4,9 @@ from typing import Optional, Dict, Any, List
 
 class StudentPort(ABC):
     @abstractmethod
+    async def get_enriched_students(self) -> List[Student]:
+        pass
+    @abstractmethod
     async def register_student(self, student_data: Dict[str, Any]) -> Student:
         pass
 

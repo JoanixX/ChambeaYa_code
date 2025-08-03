@@ -7,7 +7,7 @@ from app.domain.entities.app_user import UserRole
 from app.domain.entities.company import Company
 from app.domain.entities.student import Student
 from pydantic import BaseModel, EmailStr
-from .jwt_utils import create_access_token, verify_password
+from app.core.security.jwt_utils import create_access_token, verify_password
 
 router = APIRouter()
 

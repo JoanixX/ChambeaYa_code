@@ -6,6 +6,9 @@ class StudentService:
     def __init__(self, student_repo: StudentRepository):
         self.student_repo = student_repo
 
+    async def get_enriched_students(self) -> list:
+        return await self.student_repo.get_enriched_students(self.student_repo.session)
+
     async def register_student(self, student_data: Dict[str, Any]) -> int:
         student = self.student_entity(student_data)
 

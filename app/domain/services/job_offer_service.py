@@ -3,6 +3,8 @@ from app.domain.repositories.job_offer_repository import JobOfferRepository
 from typing import Dict, Any, Optional
 
 class JobOfferService:
+    async def get_enriched_job_offers(self) -> list:
+        return await self.job_offer_repo.get_enriched_job_offers(self.job_offer_repo.session)
     def __init__(self, job_offer_repo: JobOfferRepository):
         self.job_offer_repo = job_offer_repo
 

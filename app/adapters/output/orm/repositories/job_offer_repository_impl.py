@@ -6,6 +6,9 @@ from sqlalchemy import delete
 from typing import Optional
 
 class JobOfferRepositoryImpl(JobOfferRepository):
+    async def get_enriched_job_offers(self, session) -> list:
+        # Aquí se puede enriquecer con joins a skills, area, experience, etc. Por ahora igual a get_all
+        return await self.get_all()
     def __init__(self, session):
         self.session = session
 

@@ -8,6 +8,9 @@ class StudentUseCase:
         self.student_port = student_port
         self.student_service = student_service
 
+    async def get_enriched_students(self) -> List[Student]:
+        return await self.student_port.get_enriched_students()
+
     async def register_student(self, student_data: Dict[str, Any]) -> Dict[str, Any]:
         if not await self.student_port.validate_student_data(student_data):
             raise ValueError("Datos de estudiante inválidos")

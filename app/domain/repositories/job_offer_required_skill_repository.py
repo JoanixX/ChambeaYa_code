@@ -8,9 +8,13 @@ class JobOfferRequiredSkillRepository(ABC):
         pass
 
     @abstractmethod
-    def add(self, job_offer_required_skill: JobOfferRequiredSkill) -> JobOfferRequiredSkill:
+    def exists(self, job_offer_id: int, skill_id: int) -> bool:
         pass
 
     @abstractmethod
-    def remove(self, job_offer_required_skill_id: int) -> None:
+    def save(self, job_offer_required_skill: JobOfferRequiredSkill) -> JobOfferRequiredSkill:
+        pass
+
+    @abstractmethod
+    def delete(self, job_offer_required_skill_id: int) -> None:
         pass

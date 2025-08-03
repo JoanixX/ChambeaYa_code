@@ -1,72 +1,86 @@
-from fastapi import APIRouter, Depends, HTTPException
+from typing import List, Optional
+import logging
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infraestructure.database.connection import get_session
-from app.adapters.output.orm.repositories.skill_repository_impl import (
-    get_all_skills_impl,
-    get_skill_by_id_impl,
-    create_skill_impl,
-    update_skill_impl,
-    delete_skill_impl
-)
+
 from app.domain.entities.skill import Skill
-from typing import List, Optional
-from pydantic import BaseModel, Field
+from app.adapters.input.fastapi.schemas.skill_schema import (SkillCreate, SkillResponse)
+from app.application.factories.skill_factory import SkillUseCaseFactory
 
 router = APIRouter()
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-class SkillCreate(BaseModel):
-    name: str = Field(..., description="Name of the skill")
+@router.post("/register/skill", response_model=Skill, tags=["Skill"])
+async def register_skill(request: Request, skill: SkillCreate, session: AsyncSession = Depends(get_session)):
+    try:
+        body = await request.body()
+        logger.info(f"Body recibido: {body.decode()}")
+        logger.info(f"Iniciando registro de skill: {skill.name}")
+        
+        skill_use_case = SkillUseCaseFactory(session).build()
+
+        logger.info("Ejecutando caso de uso...")
+        result = await skill_use_case.register_skill(skill.dict())
+        
+        logger.info(f"Skill registrado exitosamente: {result}")
+        return JSONResponse(content=result)
+    except ValueError as e:
+        logger.error(f"Error de validación: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error interno del servidor: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 @router.get("/skill/all", response_model=List[dict], tags=["Skill"])
-async def get_all_skills_endpoint(session: AsyncSession = Depends(get_session)):
-    skills: List[Skill] = await get_all_skills_impl(session)
-    result = []
-    for skill in skills:
-        result.append({
-            "id": skill.id,
-            "name": skill.name
-        })
-    return result
+async def get_all_skills(session: AsyncSession = Depends(get_session)):
+    try:
+        skill_use_case = SkillUseCaseFactory(session).build()
+        students = await skill_use_case.get_all_skills()
+
+        return [s.__dict__ for s in students]
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 @router.get("/skill/{skill_id}", response_model=dict, tags=["Skill"])
-async def get_skill_by_id_endpoint(skill_id: int, session: AsyncSession = Depends(get_session)):
-    skill = await get_skill_by_id_impl(session, skill_id)
-    if not skill:
-        raise HTTPException(status_code=404, detail="Skill no encontrada")
-    
-    return {
-        "id": skill.id,
-        "name": skill.name
-    }
+async def get_skill_by_id(skill_id: int, session: AsyncSession = Depends(get_session)):
+    try:
+        skill_use_case = SkillUseCaseFactory(session).build()
+        skill = await skill_use_case.get_skill(skill_id)
 
-@router.post("/skill", response_model=dict, tags=["Skill"])
-async def create_skill_endpoint(skill: SkillCreate, session: AsyncSession = Depends(get_session)):
-    skill_entity = Skill(id=None, name=skill.name)
-    created_skill = await create_skill_impl(session, skill_entity)
-    
-    return {
-        "id": created_skill.id,
-        "name": created_skill.name
-    }
-
-@router.put("/skill/{skill_id}", response_model=dict, tags=["Skill"])
-async def update_skill_endpoint(skill_id: int, skill: SkillCreate, session: AsyncSession = Depends(get_session)):
-    existing_skill = await get_skill_by_id_impl(session, skill_id)
-    if not existing_skill:
-        raise HTTPException(status_code=404, detail="Skill no encontrada")
-    
-    updated_skill = Skill(id=skill_id, name=skill.name)
-    updated_skill = await update_skill_impl(session, updated_skill)
-    
-    return {
-        "id": updated_skill.id,
-        "name": updated_skill.name
-    }
+        return skill.__dict__
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 @router.delete("/skill/{skill_id}", response_model=dict, tags=["Skill"])
-async def delete_skill_endpoint(skill_id: int, session: AsyncSession = Depends(get_session)):
-    deleted = await delete_skill_impl(session, skill_id)
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Skill no encontrada")
-    return {"detail": "Skill eliminada"}
+async def delete_skill(skill_id: int, session: AsyncSession = Depends(get_session)):
+    try:
+        skill_use_case = SkillUseCaseFactory(session).build()
+        result = await skill_use_case.delete_skill(skill_id)
+
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+    
+@router.get("/skill/name/{skill_id}", response_model=Optional[str], tags=["Skill"])
+async def get_skill_name_by_id(skill_id: int, session: AsyncSession = Depends(get_session)):
+    try:
+        skill_use_case = SkillUseCaseFactory(session).build()
+        skill_name = await skill_use_case.get_skill_name_by_id(skill_id)
+
+        return skill_name
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")

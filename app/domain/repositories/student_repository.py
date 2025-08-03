@@ -5,6 +5,10 @@ from typing import Optional
 
 class StudentRepository(ABC):
     @abstractmethod
+    async def get_enriched_students(self, session) -> list:
+        pass
+    
+    @abstractmethod
     async def save(self, student: Student):
         pass
 

@@ -4,6 +4,9 @@ from typing import Optional, Dict, Any, List
 
 class JobOfferPort(ABC):
     @abstractmethod
+    async def get_enriched_job_offers(self) -> List[JobOffer]:
+        pass
+    @abstractmethod
     async def register_job_offer(self, job_offer_data: Dict[str, Any]) -> JobOffer:
         pass
 
