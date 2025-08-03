@@ -1,7 +1,7 @@
 from app.domain.entities.app_user import AppUser, UserRole
 from app.domain.services.app_user_service import AppUserService
 from app.domain.repositories.app_user_repository import AppUserRepository
-from app.adapters.input.fastapi.routes.jwt_utils import get_password_hash
+from app.core.security.jwt_utils import get_password_hash
 
 class AppUserUseCase:
     def __init__(self, repository: AppUserRepository, service: AppUserService):
