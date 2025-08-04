@@ -6,7 +6,7 @@ class JobOfferRequiredSkillService:
     def __init__(self, job_offer_required_skill_repo: JobOfferRequiredSkillRepository):
         self.job_offer_required_skill_repo = job_offer_required_skill_repo
 
-    async def register_job_offer_required_skill(self, job_offer_required_skill: JobOfferRequiredSkill) -> JobOfferRequiredSkill:
+    async def add_job_offer_required_skill(self, job_offer_required_skill: JobOfferRequiredSkill) -> JobOfferRequiredSkill:
         exists = await self.job_offer_required_skill_repo.exists(
             job_offer_required_skill.job_offer_id, job_offer_required_skill.skill_id
         )

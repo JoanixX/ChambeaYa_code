@@ -34,6 +34,10 @@ class StudentSkillRepositoryImpl(StudentSkillRepository):
         return result.scalar_one_or_none() is not None
 
     async def save(self, student_skill: StudentSkill) -> StudentSkill:
+        exists = await self.exists(student_skill.student_id, student_skill.skill_id)
+        if exists:
+            return student_skill
+        
         model = StudentSkillModel(
             student_id=student_skill.student_id,
             skill_id=student_skill.skill_id

@@ -6,7 +6,7 @@ class StudentInterestService:
     def __init__(self, student_interest_repo: StudentInterestRepository):
         self.student_interest_repo = student_interest_repo
 
-    async def register_student_interest(self, student_interest: StudentInterest) -> StudentInterest:
+    async def add_student_interest(self, student_interest: StudentInterest) -> StudentInterest:
         exists = await self.student_interest_repo.exists(student_interest.student_id, student_interest.interest_id)
 
         if exists:

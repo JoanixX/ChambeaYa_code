@@ -10,7 +10,7 @@ class JobOfferRequiredSkillPortImpl(JobOfferRequiredSkillPort):
         self.session = session
         self.job_offer_required_skill_repo = JobOfferRequiredSkillRepositoryImpl(session)
 
-    async def register_job_offer_required_skill(self, job_offer_required_skill: JobOfferRequiredSkill) -> JobOfferRequiredSkill:
+    async def add_job_offer_required_skill(self, job_offer_required_skill: JobOfferRequiredSkill) -> JobOfferRequiredSkill:
         return await self.job_offer_required_skill_repo.save(job_offer_required_skill)
 
     async def get_job_offer_required_skills(self, job_offer_id: int) -> List[JobOfferRequiredSkill]:

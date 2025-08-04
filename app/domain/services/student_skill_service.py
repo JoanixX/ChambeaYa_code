@@ -6,7 +6,7 @@ class StudentSkillService:
     def __init__(self, student_skill_repo: StudentSkillRepository):
         self.student_skill_repo = student_skill_repo
 
-    async def register_student_skill(self, student_skill: StudentSkill) -> StudentSkill:
+    async def add_student_skill(self, student_skill: StudentSkill) -> StudentSkill:
         exists = await self.student_skill_repo.exists(student_skill.student_id, student_skill.skill_id)
 
         if exists:

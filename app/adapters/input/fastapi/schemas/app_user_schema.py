@@ -7,8 +7,14 @@ class AppUserCreate(BaseModel):
     role: UserRole
     related_id: int
 
+    class Config:
+        use_enum_values = True
+
 class AppUserResponse(BaseModel):
     id: int
     email: EmailStr
     role: UserRole
     related_id: int
+
+    class Config:
+        use_enum_values = True

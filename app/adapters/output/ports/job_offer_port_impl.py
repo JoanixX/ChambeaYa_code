@@ -80,3 +80,6 @@ class JobOfferPortImpl(JobOfferPort):
             
         logger.info("Validación exitosa")
         return True
+    
+    async def get_enriched_job_offers(self) -> List[JobOffer]:
+        return await self.job_offer_repo.get_enriched_job_offers(self.session)

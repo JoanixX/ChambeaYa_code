@@ -13,8 +13,8 @@ router = APIRouter()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-@router.post("/student/job_offer_required_skill", response_model=JobOfferRequiredSkillResponse, tags=["Job Offer", "Skill"])
-async def register_job_offer_required_skill(
+@router.post("/job_offer/job_offer_required_skill", response_model=JobOfferRequiredSkillResponse, tags=["Job Offer", "Skill"])
+async def add_job_offer_required_skill(
     request: Request, job_offer_required_skill: JobOfferRequiredSkillCreate, session: AsyncSession = Depends(get_session)):
     try:
         job_offer_required_skill_use_case = JobOfferRequiredSkillUseCaseFactory(session).build()
@@ -33,7 +33,7 @@ async def register_job_offer_required_skill(
         logger.error(f"Error al agregar skills al estudiante: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
-@router.get("/student/{job_offer_id}/skills", response_model=List[JobOfferRequiredSkillResponse], tags=["Job Offer", "Skill"])
+@router.get("/job_offer/{job_offer_id}/skills", response_model=List[JobOfferRequiredSkillResponse], tags=["Job Offer", "Skill"])
 async def get_job_offer_required_skills(job_offer_id: int, session: AsyncSession = Depends(get_session)):
     try:
         job_offer_required_skill_use_case = JobOfferRequiredSkillUseCaseFactory(session).build()
@@ -44,7 +44,7 @@ async def get_job_offer_required_skills(job_offer_id: int, session: AsyncSession
         logger.error(f"Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
     
-@router.delete("/student/{job_offer_id}/skill/{skill_id}", response_model=dict, tags=["Job Offer", "Skill"])
+@router.delete("/job_offer/{job_offer_id}/skill/{skill_id}", response_model=dict, tags=["Job Offer", "Skill"])
 async def delete_job_offer_required_skill(job_offer_id: int, skill_id: int, session: AsyncSession = Depends(get_session)):
     try:
         job_offer_required_skill_use_case = JobOfferRequiredSkillUseCaseFactory(session).build()

@@ -33,10 +33,15 @@ class JobOfferRequiredSkillRepositoryImpl(JobOfferRequiredSkillRepository):
         )
         return result.scalar_one_or_none() is not None
 
-    async def save(self, job_offer_skill: JobOfferRequiredSkill) -> JobOfferRequiredSkill:
+    async def save(self, job_offer_required_skill: JobOfferRequiredSkill) -> JobOfferRequiredSkill:
+        exists = await self.exists(job_offer_required_skill.job_offer_id, 
+                                   job_offer_required_skill.skill_id)
+        if exists:
+            return job_offer_required_skill
+        
         model = JobOfferRequiredSkillModel(
-            job_offer_id=job_offer_skill.job_offer_id,
-            skill_id=job_offer_skill.skill_id
+            job_offer_id=job_offer_required_skill.job_offer_id,
+            skill_id=job_offer_required_skill.skill_id
         )
         self.session.add(model)
         await self.session.commit()

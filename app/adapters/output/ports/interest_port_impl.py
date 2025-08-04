@@ -27,3 +27,6 @@ class InterestPortImpl(InterestPort):
 
     async def delete_interest(self, interest_id: int) -> bool:
         return await self.interest_repo.delete(interest_id)
+    
+    async def get_interest_name_by_id(self, interest_id: int) -> Optional[str]:
+        return await self.interest_repo.get_name_by_id(interest_id)

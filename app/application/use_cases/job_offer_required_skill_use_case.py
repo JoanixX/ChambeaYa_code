@@ -13,7 +13,7 @@ class JobOfferRequiredSkillUseCase:
         return await self.job_offer_required_skill_service.get_job_offer_required_skills(job_offer_id)
 
     async def add_job_offer_required_skill(self, job_offer_required_skill: JobOfferRequiredSkill) -> JobOfferRequiredSkill:
-        job_offer_required_skill_id = await self.job_offer_required_skill_port.get_job_offer_required_skills(job_offer_required_skill) 
+        job_offer_required_skill_id = await self.job_offer_required_skill_port.add_job_offer_required_skill(job_offer_required_skill)
 
         if not job_offer_required_skill_id:
             raise ValueError("Error al agregar la habilidad al estudiante")

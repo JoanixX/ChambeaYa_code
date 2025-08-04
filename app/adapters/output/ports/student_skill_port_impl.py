@@ -10,7 +10,7 @@ class StudentSkillPortImpl(StudentSkillPort):
         self.session = session
         self.student_skill_repo = StudentSkillRepositoryImpl(session)
 
-    async def register_student_skill(self, student_skill: StudentSkill) -> StudentSkill:
+    async def add_student_skill(self, student_skill: StudentSkill) -> StudentSkill:
         return await self.student_skill_repo.save(student_skill)
 
     async def get_student_skills(self, student_id: int) -> List[StudentSkill]:

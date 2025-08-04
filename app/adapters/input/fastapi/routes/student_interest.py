@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
     
 @router.post("/student/student_interest", response_model=StudentInterestResponse, tags=["Student", "Interest"])
-async def register_student_interest(request: Request, student_interest: StudentInterestCreate, session: AsyncSession = Depends(get_session)):
+async def add_student_interest(request: Request, student_interest: StudentInterestCreate, session: AsyncSession = Depends(get_session)):
     try:
         student_interest_use_case = StudentInterestUseCaseFactory(session).build()
 

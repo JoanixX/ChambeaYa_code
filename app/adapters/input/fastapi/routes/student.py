@@ -13,7 +13,7 @@ router = APIRouter()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-@router.post("/register/student", response_model=dict, tags=["Estudiante"])
+@router.post("/register/student", response_model=dict, tags=["Student"])
 async def register_student(request: Request, student: StudentCreate, session: AsyncSession = Depends(get_session)):
     try:
         body = await request.body()
@@ -34,7 +34,7 @@ async def register_student(request: Request, student: StudentCreate, session: As
         logger.error(f"Error interno del servidor: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
-@router.get("/student/all", response_model=List[dict], tags=["Estudiante"])
+@router.get("/student/all", response_model=List[dict], tags=["Student"])
 async def get_all_students(session: AsyncSession = Depends(get_session)):
     try:
         student_use_case = StudentUseCaseFactory(session).build()
@@ -51,7 +51,7 @@ async def get_all_students(session: AsyncSession = Depends(get_session)):
         logger.error(f"Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
-@router.get("/student/{student_id}", response_model=dict, tags=["Estudiante"])
+@router.get("/student/{student_id}", response_model=dict, tags=["Student"])
 async def get_student_by_id(student_id: int, session: AsyncSession = Depends(get_session)):
     try:
         student_use_case = StudentUseCaseFactory(session).build()
@@ -64,7 +64,7 @@ async def get_student_by_id(student_id: int, session: AsyncSession = Depends(get
         logger.error(f"Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
-@router.put("/student/{student_id}", response_model=dict, tags=["Estudiante"])
+@router.put("/student/{student_id}", response_model=dict, tags=["Student"])
 async def update_student(student_id: int, student: StudentCreate, session: AsyncSession = Depends(get_session)):
     try:
         student_use_case = StudentUseCaseFactory(session).build()
@@ -77,7 +77,7 @@ async def update_student(student_id: int, student: StudentCreate, session: Async
         logger.error(f"Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
-@router.delete("/student/{student_id}", response_model=dict, tags=["Estudiante"])
+@router.delete("/student/{student_id}", response_model=dict, tags=["Student"])
 async def delete_student(student_id: int, session: AsyncSession = Depends(get_session)):
     try:
         student_use_case = StudentUseCaseFactory(session).build()

@@ -27,3 +27,6 @@ class SkillPortImpl(SkillPort):
     
     async def delete_skill(self, skill_id: int) -> bool:
         return await self.skill_repo.delete(skill_id)
+    
+    async def get_skill_name_by_id(self, skill_id: int) -> Optional[str]:
+        return await self.skill_repo.get_name_by_id(skill_id)

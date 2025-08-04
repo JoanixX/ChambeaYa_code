@@ -1,11 +1,9 @@
 from typing import List, Optional
 import logging
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infraestructure.database.connection import get_session
 
-from app.domain.entities.skill import Skill
 from app.adapters.input.fastapi.schemas.skill_schema import (SkillCreate, SkillResponse)
 from app.application.factories.skill_factory import SkillUseCaseFactory
 
@@ -14,7 +12,7 @@ router = APIRouter()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-@router.post("/register/skill", response_model=Skill, tags=["Skill"])
+@router.post("/register/skill", response_model=SkillResponse, tags=["Skill"])
 async def register_skill(request: Request, skill: SkillCreate, session: AsyncSession = Depends(get_session)):
     try:
         body = await request.body()
@@ -24,10 +22,11 @@ async def register_skill(request: Request, skill: SkillCreate, session: AsyncSes
         skill_use_case = SkillUseCaseFactory(session).build()
 
         logger.info("Ejecutando caso de uso...")
-        result = await skill_use_case.register_skill(skill.dict())
+        skill_id = await skill_use_case.register_skill(skill.dict())
+        skill_obj = await skill_use_case.get_skill(skill_id)
         
-        logger.info(f"Skill registrado exitosamente: {result}")
-        return JSONResponse(content=result)
+        logger.info(f"Interest registrado exitosamente: {skill_obj}")
+        return skill_obj
     except ValueError as e:
         logger.error(f"Error de validación: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
@@ -35,24 +34,24 @@ async def register_skill(request: Request, skill: SkillCreate, session: AsyncSes
         logger.error(f"Error interno del servidor: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
-@router.get("/skill/all", response_model=List[dict], tags=["Skill"])
+@router.get("/skill/all", response_model=List[SkillResponse], tags=["Skill"])
 async def get_all_skills(session: AsyncSession = Depends(get_session)):
     try:
         skill_use_case = SkillUseCaseFactory(session).build()
         students = await skill_use_case.get_all_skills()
 
-        return [s.__dict__ for s in students]
+        return students
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
-@router.get("/skill/{skill_id}", response_model=dict, tags=["Skill"])
+@router.get("/skill/{skill_id}", response_model=SkillResponse, tags=["Skill"])
 async def get_skill_by_id(skill_id: int, session: AsyncSession = Depends(get_session)):
     try:
         skill_use_case = SkillUseCaseFactory(session).build()
         skill = await skill_use_case.get_skill(skill_id)
 
-        return skill.__dict__
+        return skill
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:

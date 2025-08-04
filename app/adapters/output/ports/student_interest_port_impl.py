@@ -10,7 +10,7 @@ class StudentInterestPortImpl(StudentInterestPort):
         self.session = session
         self.student_interest_repo = StudentInterestRepositoryImpl(session)
 
-    async def register_student_interest(self, student_interest: StudentInterest) -> StudentInterest:
+    async def add_student_interest(self, student_interest: StudentInterest) -> StudentInterest:
         return await self.student_interest_repo.save(student_interest)
 
     async def get_student_interests(self, student_id: int) -> List[StudentInterest]:

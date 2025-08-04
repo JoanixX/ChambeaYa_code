@@ -34,6 +34,10 @@ class StudentInterestRepositoryImpl(StudentInterestRepository):
         return result.scalar_one_or_none() is not None
 
     async def save(self, student_interest: StudentInterest) -> StudentInterest:
+        exists = await self.exists(student_interest.student_id, student_interest.interest_id)
+        if exists:
+            return student_interest
+        
         model = StudentInterestModel(
             student_id=student_interest.student_id,
             interest_id=student_interest.interest_id

@@ -1,7 +1,8 @@
-from app.domain.entities.skill import Skill
 from app.application.ports.skill_port import SkillPort
 from app.domain.services.skill_service import SkillService
 from typing import Optional, List, Dict, Any
+
+from app.adapters.input.fastapi.schemas.skill_schema import SkillResponse
 
 class SkillUseCase:
     def __init__(self, skill_port: SkillPort, skill_service: SkillService):
@@ -14,20 +15,17 @@ class SkillUseCase:
         if not skill_id:
             raise ValueError("Error al guardar el skill")
 
-        return {
-            "skill_id": skill_id,
-            "registration_success": True,
-            "message": "Skill registrado exitosamente"
-        }
+        return skill_id
 
-    async def get_all_skills(self) -> List[Skill]:
-        return await self.skill_port.get_all_skills()
+    async def get_all_skills(self) -> List[SkillResponse]:
+        skills = await self.skill_port.get_all_skills()
+        return [SkillResponse(id=s.id, name=s.name) for s in skills]
     
-    async def get_skill(self, skill_id: int) -> Skill:
+    async def get_skill(self, skill_id: int) -> SkillResponse:
         skill = await self.skill_port.get_skill(skill_id)
         if not skill:
             raise ValueError(f"Skill con ID {skill_id} no encontrado")
-        return skill
+        return SkillResponse(id=skill.id, name=skill.name)
     
     async def delete_skill(self, skill_id: int) -> Dict[str, Any]:
         skill = await self.skill_port.get_skill(skill_id)
