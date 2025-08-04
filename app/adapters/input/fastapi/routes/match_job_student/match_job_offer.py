@@ -10,12 +10,13 @@ router = APIRouter()
 
 @router.post("/aimodel/job_offer/best_students/{job_offer_id}", response_model=dict, tags=["AI Model"])
 async def best_students(job_offer_id: int, session: AsyncSession = Depends(get_session)):
-    job_offer = await get_job_offer_by_id(session, job_offer_id)
+    job_offer_repo = JobOfferRepositoryImpl(session)
+    job_offer = await job_offer_repo.find_by_id(job_offer_id)
     if not job_offer:
         raise HTTPException(status_code=404, detail="Job offer not found")
 
-    repo = StudentRepositoryImpl(session)
-    students = await repo.get_all()  # asegúrate de tener esta función en repo
+    student_repo = StudentRepositoryImpl(session)
+    students = await student_repo.get_all()
     service = MatchJobStudentService()
     try:
         response = await service.match_best_from_offer(job_offer, students)

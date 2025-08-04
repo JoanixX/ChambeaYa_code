@@ -1,7 +1,7 @@
 class FilterMatch:
-    def __init__(self, job_offer_id: int, student_id: int,
+    def __init__(self, job_offer_id: int,
                  status: str, stage: int):
         self.job_offer_id = job_offer_id
-        self.student_id = student_id
+        # self.student_id = student_id
         self.status = status
         self.stage = stage

@@ -19,10 +19,10 @@ async def preprocess_student(student: dict):
         response.raise_for_status()
         return response.json()
 
-async def preprocess_all_job_offers():
+async def preprocess_all_job_offers(job_offers_data):
     url = f"{IA_API_BASE_URL}/filter/job_offer/preprocess_all_job_offer"
     async with httpx.AsyncClient(timeout=30.0) as client:
-        response = await client.post(url)
+        response = await client.post(url, json=job_offers_data)
         response.raise_for_status()
         return response.json()
 

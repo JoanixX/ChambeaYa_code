@@ -40,13 +40,8 @@ async def get_all_job_offers(session: AsyncSession = Depends(get_session)):
         job_offer_use_case = JobOfferUseCaseFactory(session).build()
         job_offers = await job_offer_use_case.get_all_job_offers()
 
-        def serialize_job_offer(j):
-            d = j.__dict__.copy()
-            if d.get('start_date'):
-                d['start_date'] = d['start_date'].isoformat()
-            return d
-        
-        return [serialize_job_offer(j) for j in job_offers]
+        # Convertir cada JobOfferResponse a dict para FastAPI (Pydantic v2 usa model_dump, v1 usa dict)
+        return [JobOfferResponse(**j.__dict__).model_dump() for j in job_offers]
     except Exception as e:
         logger.error(f"Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
@@ -56,8 +51,7 @@ async def get_job_offer(job_offer_id: int, session: AsyncSession = Depends(get_s
     try:
         job_offer_use_case = JobOfferUseCaseFactory(session).build()
         job_offer = await job_offer_use_case.get_job_offer(job_offer_id)
-
-        return job_offer.__dict__
+        return JobOfferResponse(**job_offer.__dict__).model_dump()
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:

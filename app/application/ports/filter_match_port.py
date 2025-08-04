@@ -4,11 +4,11 @@ from typing import Dict, Any
 
 class FilterMatchPort(ABC):
     @abstractmethod
-    async def preprocess_job_offer(self, job_offer: JobOffer) -> Dict[str, Any]:
+    async def preprocess_job_offer(self, job_offer_id: int) -> Dict[str, Any]:
         pass
 
     @abstractmethod
-    async def preprocess_all_job_offers(self, job_offers: list[JobOffer]) -> list[Dict[str, Any]]:
+    async def preprocess_all_job_offers(self, job_offer_ids: list[int]) -> list[Dict[str, Any]]:
         pass
 
     @abstractmethod
