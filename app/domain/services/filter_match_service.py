@@ -2,8 +2,7 @@ from typing import Any, Optional, List
 from app.domain.repositories.filter_match_repository import FilterMatchRepository
 from app.adapters.output.orm.repositories.job_offer_repository_impl import JobOfferRepositoryImpl
 from app.adapters.output.orm.repositories.area_repository_impl import get_area_name_by_id_impl
-from app.adapters.output.orm.repositories.experience_detail_repository_impl import get_experience_name_by_id_impl
-from app.adapters.output.orm.repositories.company_repository_impl import CompanyRepositoryImpl
+from app.adapters.output.orm.repositories.experience_detail_repository_impl import get_experience_detail_by_id_impl
 from app.adapters.output.orm.repositories.job_offer_required_skill_repository_impl import JobOfferRequiredSkillRepositoryImpl
 from app.adapters.output.orm.repositories.skill_repository_impl import SkillRepositoryImpl
 from app.infraestructure.ai_client.ai_connection import preprocess_all_job_offers
@@ -32,21 +31,18 @@ class FilterMatchService:
         dicts = []
         for offer in offers:
             area = await get_area_name_by_id_impl(self.session, offer.area_id) if offer.area_id else None
-            experience = await get_experience_name_by_id_impl(self.session, offer.experience_id) if offer.experience_id else None
-            company = await CompanyRepositoryImpl(self.session).find_by_id(offer.company_id) if offer.company_id else None
-            company_name = company.name if company else None
             required_skills = await JobOfferRequiredSkillRepositoryImpl(self.session).get_by_job_offer_id(offer.id)
             skill_names = []
             for req_skill in required_skills:
                 skill = await SkillRepositoryImpl(self.session).find_by_id(req_skill.skill_id)
                 if skill:
                     skill_names.append(skill.name)
+
             dicts.append({
                 "id": offer.id,
                 "title": offer.title,
                 "description": offer.description,
-                "area": area,
-                "area_id": offer.area_id,
+                "area_id": area,
                 "required_skills": skill_names,
                 "embedding": None
             })
@@ -69,11 +65,8 @@ class FilterMatchService:
         offer = await job_offer_repo.find_by_id(job_offer_id)
         if not offer:
             return None
-        # Preparar dict completo
+        import logging
         area = await get_area_name_by_id_impl(self.session, offer.area_id) if offer.area_id else None
-        experience = await get_experience_name_by_id_impl(self.session, offer.experience_id) if offer.experience_id else None
-        company = await CompanyRepositoryImpl(self.session).find_by_id(offer.company_id) if offer.company_id else None
-        company_name = company.name if company else None
         required_skills = await JobOfferRequiredSkillRepositoryImpl(self.session).get_by_job_offer_id(offer.id)
         skill_names = []
         for req_skill in required_skills:
@@ -84,11 +77,11 @@ class FilterMatchService:
             "id": offer.id,
             "title": offer.title,
             "description": offer.description,
-            "area": area,
-            "area_id": offer.area_id,
+            "area_id": area,
             "required_skills": skill_names,
             "embedding": None
         }
+        logging.warning(f"[PREPROCESS JOB_OFFER] Datos enviados: {offer_dict}")
         # Llamar a IA
         embeddings = await preprocess_all_job_offers([offer_dict])
         if embeddings and embeddings[0] and "embedding" in embeddings[0]:
@@ -114,6 +107,7 @@ class FilterMatchService:
         skill_name_repo = SkillRepositoryImpl(self.session)
         interest_repo = StudentInterestRepositoryImpl(self.session)
         interest_name_repo = InterestRepositoryImpl(self.session)
+        
         for student in students:
             # Obtener skills
             student_skills = await skill_repo.get_by_student_id(student.id)
@@ -129,14 +123,15 @@ class FilterMatchService:
                 interest = await interest_name_repo.find_by_id(si.interest_id)
                 if interest:
                     interest_names.append(interest.name)
+            experience = await get_experience_detail_by_id_impl(self.session, student.experience_id) if getattr(student, 'experience_id', None) else None
+            experience_str = f"{experience.name} {experience.description}" if experience else None
             dicts.append({
                 "id": student.id,
-                "name": student.name,
                 "career": student.career,
-                "description": student.description,
-                "experience_id": student.experience_id,
                 "skills": skill_names,
                 "interests": interest_names,
+                "description": student.description,
+                "experience_id": experience_str,
                 "embedding": None
             })
         # 3. Llamar a IA
@@ -178,16 +173,19 @@ class FilterMatchService:
             interest = await interest_name_repo.find_by_id(si.interest_id)
             if interest:
                 interest_names.append(interest.name)
+        import logging
+        experience = await get_experience_detail_by_id_impl(self.session, student.experience_id) if getattr(student, 'experience_id', None) else None
+        experience_str = f"{experience.name} {experience.description}" if experience else None
         student_dict = {
             "id": student.id,
-            "name": student.name,
             "career": student.career,
-            "description": student.description,
-            "experience_id": student.experience_id,
             "skills": skill_names,
             "interests": interest_names,
+            "description": student.description,
+            "experience_id": experience_str,
             "embedding": None
         }
+        logging.warning(f"[PREPROCESS STUDENT] Datos enviados: {student_dict}")
         # Llamar a IA
         from app.infraestructure.ai_client.ai_connection import preprocess_all_students
         embeddings = await preprocess_all_students([student_dict])

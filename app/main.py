@@ -10,6 +10,7 @@ from app.adapters.input.fastapi.routes.agreement import router as agreement_rout
 from app.adapters.input.fastapi.routes.app_user import router as app_user_router
 from app.adapters.input.fastapi.routes.area import router as area_router
 from app.adapters.input.fastapi.routes.company import router as company_router
+from app.adapters.input.fastapi.routes.experience_detail import router as experience_detail_router
 from app.adapters.input.fastapi.routes.interest import router as interest_router
 from app.adapters.input.fastapi.routes.job_offer_required_skill import router as job_offer_required_skill_router
 from app.adapters.input.fastapi.routes.job_offer import router as job_offer_router
@@ -43,6 +44,7 @@ app.include_router(agreement_router, prefix= "/api")
 app.include_router(app_user_router, prefix="/api")
 app.include_router(area_router, prefix="/api")
 app.include_router(company_router, prefix= "/api")
+app.include_router(experience_detail_router, prefix="/api")
 app.include_router(filter_match_router, prefix="/api")
 app.include_router(interest_router, prefix="/api")
 app.include_router(job_offer_required_skill_router, prefix="/api")
