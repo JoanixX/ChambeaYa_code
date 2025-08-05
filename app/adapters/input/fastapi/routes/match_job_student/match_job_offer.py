@@ -4,6 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.adapters.output.orm.repositories.job_offer_repository_impl import JobOfferRepositoryImpl
 from app.adapters.output.orm.repositories.student_repository_impl import StudentRepositoryImpl
 from app.domain.services.match_job_student_service import MatchJobStudentService
+from app.adapters.output.orm.repositories.match_job_student_repository_impl import MatchJobStudentRepositoryImpl
+from app.adapters.output.ports.match_job_student_port_impl import MatchJobStudentPortImpl
 from fastapi import HTTPException, Depends
 
 router = APIRouter()
@@ -17,7 +19,9 @@ async def best_students(job_offer_id: int, session: AsyncSession = Depends(get_s
 
     student_repo = StudentRepositoryImpl(session)
     students = await student_repo.get_all()
-    service = MatchJobStudentService()
+    match_js_repo = MatchJobStudentRepositoryImpl(session)
+    match_js_port = MatchJobStudentPortImpl(session)
+    service = MatchJobStudentService(match_js_repo, match_js_port, session)
     try:
         response = await service.match_best_from_offer(job_offer, students)
     except Exception as e:
