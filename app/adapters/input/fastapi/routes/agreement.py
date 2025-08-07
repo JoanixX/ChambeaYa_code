@@ -38,8 +38,7 @@ async def get_all_agreements(session: AsyncSession = Depends(get_session)):
     try:
         agreement_use_case = AgreementUseCaseFactory(session).build()
         agreements = await agreement_use_case.get_all_agreements()
-
-        return [a.__dict__ for a in agreements]
+        return [AgreementResponse(**a.__dict__).model_dump() for a in agreements]
     except Exception as e:
         logger.error(f"Error al obtener acuerdos: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
@@ -49,8 +48,7 @@ async def get_agreement(agreement_id: int, session: AsyncSession = Depends(get_s
     try:
         agreement_use_case = AgreementUseCaseFactory(session).build()
         agreement = await agreement_use_case.get_agreement(agreement_id)
-
-        return agreement.__dict__
+        return AgreementResponse(**agreement.__dict__).model_dump()
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:

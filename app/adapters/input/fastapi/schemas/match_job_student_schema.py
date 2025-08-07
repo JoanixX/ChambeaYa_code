@@ -13,3 +13,5 @@ class MatchJobStudentResponse(BaseModel):
     score: float
     match_date: str
     rank: int
+    updated_at: str
+    deleted_at: str = None

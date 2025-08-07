@@ -18,3 +18,7 @@ class SkillPort(ABC):
     @abstractmethod
     async def delete_skill(self, skill_id: int) -> bool:
         pass
+
+    @abstractmethod
+    async def get_skill_name_by_id(self, skill_id: int) -> Optional[str]:
+        pass

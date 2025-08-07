@@ -56,3 +56,6 @@ class StudentResponse(BaseModel):
     academic_cycle: int
     main_motivation: str
     description: str
+    created_at: str
+    updated_at: str
+    deleted_at: str = None

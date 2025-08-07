@@ -1,5 +1,6 @@
 from app.domain.entities.company import Company
 from app.domain.repositories.company_repository import CompanyRepository
+from datetime import datetime
 from typing import Dict, Any, Optional
 
 class CompanyService:
@@ -8,7 +9,9 @@ class CompanyService:
 
     async def register_company(self, company_data: Dict[str, Any]) -> int:
         company = self.company_entity(company_data)
-
+        company.created_at = datetime.utcnow()
+        company.updated_at = datetime.utcnow()
+        company.deleted_at = None
         saved_model = await self.company_repo.save(company)
         if saved_model:
             return saved_model.id
@@ -35,18 +38,29 @@ class CompanyService:
             area_id=company_data.get("area_id", existing_company.area_id),
             contact_name=company_data.get("contact_name", existing_company.contact_name),
             email=company_data.get("email", existing_company.email),
-            company_culture=company_data.get("company_culture", existing_company.company_culture)
+            company_culture=company_data.get("company_culture", existing_company.company_culture),
+            created_at=existing_company.created_at,
+            updated_at=datetime.utcnow(),
+            deleted_at=existing_company.deleted_at
         )
-
         await self.company_repo.update(updated_company)
         return updated_company
     
-    async def delete_company(self, company_id: int) -> bool:
-        return await self.company_repo.delete(company_id)
+    async def delete_company(self, company_id: int, soft_delete: bool = False) -> bool:
+        if soft_delete:
+            existing_company = await self.company_repo.find_by_id(company_id)
+            if not existing_company:
+                return False
+            existing_company.deleted_at = datetime.utcnow()
+            await self.company_repo.update(existing_company)
+            return True
+        else:
+            return await self.company_repo.delete(company_id)
     
     def company_entity(self, company_data: Dict[str, Any]) -> Company:
+        # No permitir manipulación de campos temporales por usuario
         return Company(
-            id=0,  #se asignará automáticamente por la base de datos
+            id=0, #se asignará automáticamente por la base de datos
             RUC=company_data["RUC"],
             name=company_data["name"],
             location=company_data["location"],
@@ -54,5 +68,8 @@ class CompanyService:
             area_id=company_data["area_id"],
             contact_name=company_data["contact_name"],
             email=company_data["email"],
-            company_culture=company_data["company_culture"]
+            company_culture=company_data["company_culture"],
+            created_at=None,
+            updated_at=None,
+            deleted_at=None
         )

@@ -30,7 +30,6 @@ async def preprocess_all_job_offer(session: AsyncSession = Depends(get_session))
         raise HTTPException(status_code=502, detail=f"Error en la API de IA: {str(e)}")
     return [FilterMatchResponse(**item) for item in processed]
 
-
 @router.post("/filter/job_offer/preprocess_job_offer", response_model=FilterMatchResponse, tags=["AI Model"])
 async def preprocess_job_offer(job_offer_id: int = Body(..., embed=True), session: AsyncSession = Depends(get_session)):
     use_case = FilterMatchUseCaseFactory.create(session)

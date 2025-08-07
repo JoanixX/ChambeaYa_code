@@ -1,19 +1,24 @@
 from app.domain.repositories.match_job_student_repository import MatchJobStudentRepository
 from app.domain.entities.match_job_student import MatchJobStudent
 from app.adapters.output.orm.models.match_job_student_model import MatchJobStudentModel
+from datetime import datetime
 
 class MatchJobStudentRepositoryImpl(MatchJobStudentRepository):
     def __init__(self, session):
         self.session = session
 
     async def save(self, filter_match: MatchJobStudent):
+        now = datetime.utcnow()
         model = MatchJobStudentModel(
             match_job_student_id=filter_match.id,
             student_id = filter_match.student_id,
             job_offer_id=filter_match.job_offer_id,
             score=filter_match.score,
             match_date=filter_match.match_date,
-            rank=filter_match.rank
+            rank=filter_match.rank,
+            created_at=now,
+            updated_at=now,
+            deleted_at=None
         )
         self.session.add(model)
         await self.session.commit()
@@ -27,6 +32,9 @@ class MatchJobStudentRepositoryImpl(MatchJobStudentRepository):
                 job_offer_id=model.job_offer_id,
                 score=model.score,
                 match_date=model.match_date,
-                rank=model.rank
+                rank=model.rank,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             )
         return None

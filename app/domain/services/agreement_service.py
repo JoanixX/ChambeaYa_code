@@ -1,5 +1,6 @@
 from app.domain.entities.agreement import Agreement, AgreementStatus
 from app.domain.repositories.agreement_repository import AgreementRepository
+from datetime import datetime
 from typing import Optional, Dict, Any
 
 class AgreementService:
@@ -7,8 +8,11 @@ class AgreementService:
         self.agreement_repo = agreement_repo
 
     async def register_agreement(self, agreement_data: Dict[str, Any]) -> int:
+        # No permitir manipulación de campos temporales por usuario
         agreement = self.agreement_entity(agreement_data)
-        
+        agreement.created_at = datetime.utcnow()
+        agreement.updated_at = datetime.utcnow()
+        agreement.deleted_at = None
         saved_model = await self.agreement_repo.save(agreement)
         if saved_model:
             return saved_model.id
@@ -44,21 +48,36 @@ class AgreementService:
             student_id=agreement_data.get("student_id", existing_agreement.student_id),
             status=AgreementStatus(agreement_data.get("status", existing_agreement.status.value)),
             start_date=agreement_data.get("start_date", existing_agreement.start_date),
-            end_date=agreement_data.get("end_date", existing_agreement.end_date)
+            end_date=agreement_data.get("end_date", existing_agreement.end_date),
+            created_at=existing_agreement.created_at,  # conservar original
+            updated_at=datetime.utcnow(),  # actualizar
+            deleted_at=existing_agreement.deleted_at  # conservar
         )
-
         await self.agreement_repo.update(updated_agreement)
         return updated_agreement
     
-    async def delete_agreement(self, agreement_id: int) -> bool:
-        return await self.agreement_repo.delete(agreement_id)
+    async def delete_agreement(self, agreement_id: int, soft_delete: bool = False) -> bool:
+        if soft_delete:
+            existing_agreement = await self.agreement_repo.find_by_id(agreement_id)
+            if not existing_agreement:
+                return False
+            # Solo setear deleted_at, conservar el resto
+            existing_agreement.deleted_at = datetime.utcnow()
+            await self.agreement_repo.update(existing_agreement)
+            return True
+        else:
+            return await self.agreement_repo.delete(agreement_id)
     
     def agreement_entity(self, agreement_data: Dict[str, Any]) -> Agreement:
+        # No permitir manipulación de campos temporales por usuario
         return Agreement(
             id=0,  # se asignará automáticamente por la base de datos
             job_offer_id=agreement_data["job_offer_id"],
             student_id=agreement_data["student_id"],
             status=AgreementStatus(agreement_data["status"]),
             start_date=agreement_data.get("start_date"),
-            end_date=agreement_data.get("end_date")
+            end_date=agreement_data.get("end_date"),
+            created_at=None,
+            updated_at=None,
+            deleted_at=None
         )

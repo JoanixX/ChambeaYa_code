@@ -12,7 +12,7 @@ router = APIRouter()
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-    
+
 @router.post("/student/student_interest", response_model=StudentInterestResponse, tags=["Student", "Interest"])
 async def add_student_interest(request: Request, student_interest: StudentInterestCreate, session: AsyncSession = Depends(get_session)):
     try:
@@ -36,9 +36,8 @@ async def add_student_interest(request: Request, student_interest: StudentIntere
 async def get_student_interests(student_id: int, session: AsyncSession = Depends(get_session)):
     try:
         student_interest_use_case = StudentInterestUseCaseFactory(session).build()
-
         interests = await student_interest_use_case.get_student_interests(student_id)
-        return [interest.__dict__ for interest in interests]
+        return [StudentInterestResponse(student_id=interest.student_id, interest_id=interest.interest_id) for interest in interests]
     except Exception as e:
         logger.error(f"Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")

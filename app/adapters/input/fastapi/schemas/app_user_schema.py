@@ -15,6 +15,9 @@ class AppUserResponse(BaseModel):
     email: EmailStr
     role: UserRole
     related_id: int
+    created_at: str
+    updated_at: str
+    deleted_at: str = None
 
     class Config:
         use_enum_values = True

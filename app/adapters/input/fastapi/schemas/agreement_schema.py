@@ -42,3 +42,6 @@ class AgreementResponse(BaseModel):
     start_date: Optional[date]
     end_date: Optional[date]
     status: AgreementStatus
+    created_at: str
+    updated_at: str
+    deleted_at: str = None

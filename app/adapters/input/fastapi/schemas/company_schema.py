@@ -33,3 +33,6 @@ class CompanyResponse(BaseModel):
     contact_name: str
     email: EmailStr
     company_culture: str
+    created_at: str
+    updated_at: str
+    deleted_at: str = None

@@ -21,9 +21,13 @@ class FilterMatchResponse(BaseModel):
     job_offer_id: Optional[int]
     status: Optional[str]
     stage: Optional[int]
+    created_at: str
+    updated_at: str
 
 # Nuevo modelo para respuestas de estudiantes
 class FilterMatchStudentResponse(BaseModel):
     student_id: Optional[int]
     status: Optional[str]
     stage: Optional[int]
+    created_at: str
+    updated_at: str

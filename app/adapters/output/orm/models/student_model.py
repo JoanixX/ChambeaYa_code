@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String, SmallInteger, Date, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, SmallInteger
+from sqlalchemy import DateTime, Date, ForeignKey, JSON
+from sqlalchemy.sql import func
 from app.infraestructure.database.base import Base
 
 class StudentModel(Base):
@@ -16,3 +18,6 @@ class StudentModel(Base):
     experience_id = Column(SmallInteger, ForeignKey('experience_detail.id'), nullable=True)
     date_of_birth = Column(Date, nullable=False)
     embedding = Column(JSON, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now())
+    deleted_at = Column(DateTime, nullable=True)

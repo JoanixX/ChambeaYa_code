@@ -1,6 +1,7 @@
 from typing import Dict, Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
+from datetime import datetime
 
 from app.adapters.output.orm.repositories.company_repository_impl import CompanyRepositoryImpl
 from app.application.ports.company_port import CompanyPort
@@ -24,9 +25,11 @@ class CompanyPortImpl(CompanyPort):
             area_id=company_data['area_id'],
             contact_name=company_data['contact_name'],
             email=company_data['email'],
-            company_culture=company_data['company_culture']
+            company_culture=company_data['company_culture'],
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            deleted_at=None
         )
-
         saved_company = await self.company_repo.save(company)
         return saved_company
     
@@ -40,7 +43,6 @@ class CompanyPortImpl(CompanyPort):
         existing_company = await self.company_repo.find_by_id(company_id)
         if not existing_company:
             return None
-        
         updated_company = Company(
             id=company_id,
             RUC=company_data.get('RUC', existing_company.RUC),
@@ -50,9 +52,11 @@ class CompanyPortImpl(CompanyPort):
             area_id=company_data.get('area_id', existing_company.area_id),
             contact_name=company_data.get('contact_name', existing_company.contact_name),
             email=company_data.get('email', existing_company.email),
-            company_culture=company_data.get('company_culture', existing_company.company_culture)
+            company_culture=company_data.get('company_culture', existing_company.company_culture),
+            created_at=existing_company.created_at,
+            updated_at=datetime.utcnow(),
+            deleted_at=existing_company.deleted_at
         )
-
         return await self.company_repo.update(updated_company)
     
     async def delete_company(self, company_id: int) -> bool:

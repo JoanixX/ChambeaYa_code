@@ -1,6 +1,7 @@
 from typing import Dict, Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
+from datetime import datetime
 
 from app.application.ports.agreement_port import AgreementPort
 from app.adapters.output.orm.repositories.agreement_repository_impl import AgreementRepositoryImpl
@@ -21,9 +22,11 @@ class AgreementPortImpl(AgreementPort):
             student_id=agreement_data['student_id'],
             status=agreement_data.get('status', AgreementStatus.pending),
             start_date=agreement_data['start_date'],
-            end_date=agreement_data['end_date']
+            end_date=agreement_data['end_date'],
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            deleted_at=None
         )
-
         saved_agreement = await self.agreement_repo.save(agreement)
         return saved_agreement
 
@@ -47,16 +50,17 @@ class AgreementPortImpl(AgreementPort):
         existing_agreement = await self.agreement_repo.find_by_id(agreement_id)
         if not existing_agreement:
             return None
-        
         updated_agreement = Agreement(
             id=agreement_id,
             job_offer_id=agreement_data.get('job_offer_id', existing_agreement.job_offer_id),
             student_id=agreement_data.get('student_id', existing_agreement.student_id),
             status=agreement_data.get('status', existing_agreement.status),
             start_date=agreement_data.get('start_date', existing_agreement.start_date),
-            end_date=agreement_data.get('end_date', existing_agreement.end_date)
+            end_date=agreement_data.get('end_date', existing_agreement.end_date),
+            created_at=existing_agreement.created_at,
+            updated_at=datetime.utcnow(),
+            deleted_at=existing_agreement.deleted_at
         )
-
         return await self.agreement_repo.update(updated_agreement)
     
     async def delete_agreement(self, agreement_id: int) -> bool:

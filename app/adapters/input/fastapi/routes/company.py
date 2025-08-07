@@ -38,9 +38,8 @@ async def register_company(request: Request, company: CompanyCreate, session: As
 async def get_all_companies(session: AsyncSession = Depends(get_session)):
     try:
         company_use_case = CompanyUseCaseFactory(session).build()
-        company = await company_use_case.get_all_companies()
-
-        return [comp.__dict__ for comp in company]
+        companies = await company_use_case.get_all_companies()
+        return [CompanyResponse(**comp.__dict__).model_dump() for comp in companies]
     except Exception as e:
         logger.error(f"Error al obtener empresas: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
@@ -50,8 +49,7 @@ async def get_company_by_id(company_id: int, session: AsyncSession = Depends(get
     try:
         company_use_case = CompanyUseCaseFactory(session).build()
         company = await company_use_case.get_company(company_id)
-
-        return company.__dict__
+        return CompanyResponse(**company.__dict__).model_dump()
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:

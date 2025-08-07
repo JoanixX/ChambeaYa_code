@@ -1,6 +1,7 @@
 from app.domain.entities.job_offer import JobOffer
 from app.domain.repositories.job_offer_repository import JobOfferRepository
 from typing import Dict, Any, Optional
+from datetime import datetime
 
 class JobOfferService:
     async def get_enriched_job_offers(self) -> list:
@@ -10,19 +11,21 @@ class JobOfferService:
 
     async def register_job_offer(self, job_offer_data: Dict[str, Any]) -> int:
         job_offer = self.job_offer_entity(job_offer_data)
-
+        job_offer.created_at = datetime.utcnow()
+        job_offer.updated_at = datetime.utcnow()
+        job_offer.deleted_at = None
         saved_model = await self.job_offer_repo.save(job_offer)
         if saved_model:
             return saved_model.id
         else:
             raise ValueError("Error al guardar la oferta de trabajo")
-        
+
     async def get_job_offer(self, job_offer_id: int) -> Optional[JobOffer]:
         return await self.job_offer_repo.find_by_id(job_offer_id)
-    
+
     async def get_all_job_offers(self) -> list[JobOffer]:
         return await self.job_offer_repo.get_all()
-    
+
     async def update_job_offer(self, job_offer_id: int, job_offer_data: Dict[str, Any]) -> Optional[JobOffer]:
         existing_job_offer = await self.job_offer_repo.find_by_id(job_offer_id)
         if not existing_job_offer:
@@ -40,16 +43,27 @@ class JobOfferService:
             area_id=job_offer_data.get("area_id", existing_job_offer.area_id),
             experience_id=job_offer_data.get("experience_id", existing_job_offer.experience_id),
             modality=job_offer_data.get("modality", existing_job_offer.modality),
-            embedding=job_offer_data.get("embedding", existing_job_offer.embedding)
+            embedding=job_offer_data.get("embedding", existing_job_offer.embedding),
+            created_at=existing_job_offer.created_at,
+            updated_at=datetime.utcnow(),
+            deleted_at=existing_job_offer.deleted_at
         )
-
         await self.job_offer_repo.update(updated_job_offer)
         return updated_job_offer
-    
-    async def delete_job_offer(self, job_offer_id: int) -> bool:
-        return await self.job_offer_repo.delete(job_offer_id)
-    
+
+    async def delete_job_offer(self, job_offer_id: int, soft_delete: bool = False) -> bool:
+        if soft_delete:
+            existing_job_offer = await self.job_offer_repo.find_by_id(job_offer_id)
+            if not existing_job_offer:
+                return False
+            existing_job_offer.deleted_at = datetime.utcnow()
+            await self.job_offer_repo.update(existing_job_offer)
+            return True
+        else:
+            return await self.job_offer_repo.delete(job_offer_id)
+
     def job_offer_entity(self, job_offer_data: Dict[str, Any]) -> JobOffer:
+        # No permitir manipulación de campos temporales por usuario
         return JobOffer(
             id=0,
             company_id=job_offer_data.get("company_id", None),
@@ -62,5 +76,8 @@ class JobOfferService:
             area_id=job_offer_data.get("area_id", None),
             experience_id=job_offer_data.get("experience_id", None),
             modality=job_offer_data.get("modality", None),
-            embedding=job_offer_data.get("embedding", {})
+            embedding=job_offer_data.get("embedding", {}),
+            created_at=None,
+            updated_at=None,
+            deleted_at=None
         )

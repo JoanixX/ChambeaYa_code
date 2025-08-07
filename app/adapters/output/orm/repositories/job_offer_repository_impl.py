@@ -4,6 +4,7 @@ from app.domain.repositories.job_offer_repository import JobOfferRepository
 from sqlalchemy.future import select
 from sqlalchemy import delete
 from typing import Optional
+from datetime import datetime
 
 class JobOfferRepositoryImpl(JobOfferRepository):
     async def get_enriched_job_offers(self, session) -> list:
@@ -13,6 +14,7 @@ class JobOfferRepositoryImpl(JobOfferRepository):
         self.session = session
 
     async def save(self, job_offer: JobOffer):
+        now = datetime.utcnow()
         model = JobOfferModel(
             company_id=job_offer.company_id,
             title=job_offer.title,
@@ -24,7 +26,10 @@ class JobOfferRepositoryImpl(JobOfferRepository):
             area_id=job_offer.area_id,
             experience_id=job_offer.experience_id,
             modality=job_offer.modality,
-            embedding=job_offer.embedding
+            embedding=job_offer.embedding,
+            created_at=now,
+            updated_at=now,
+            deleted_at=None
         )
         self.session.add(model)
         await self.session.commit()
@@ -47,7 +52,10 @@ class JobOfferRepositoryImpl(JobOfferRepository):
                 area_id=model.area_id,
                 experience_id=model.experience_id,
                 modality=model.modality,
-                embedding=model.embedding
+                embedding=model.embedding,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             )
         return None
 
@@ -68,7 +76,10 @@ class JobOfferRepositoryImpl(JobOfferRepository):
                 area_id=model.area_id,
                 experience_id=model.experience_id,
                 modality=model.modality,
-                embedding=model.embedding
+                embedding=model.embedding,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             ))
         return job_offers
 
@@ -90,7 +101,10 @@ class JobOfferRepositoryImpl(JobOfferRepository):
                     area_id=model.area_id,
                     experience_id=model.experience_id,
                     modality=model.modality,
-                    embedding=model.embedding
+                    embedding=model.embedding,
+                    created_at=model.created_at,
+                    updated_at=model.updated_at,
+                    deleted_at=model.deleted_at
                 )
             )
         return job_offers
@@ -110,9 +124,26 @@ class JobOfferRepositoryImpl(JobOfferRepository):
             model.experience_id = job_offer.experience_id
             model.modality = job_offer.modality
             model.embedding = job_offer.embedding
+            model.updated_at = datetime.utcnow()
             await self.session.commit()
             await self.session.refresh(model)
-            return job_offer
+            return JobOffer(
+                id=model.id,
+                company_id=model.company_id,
+                title=model.title,
+                description=model.description,
+                required_hours=model.required_hours,
+                approximated_salary=model.approximated_salary,
+                duration=model.duration,
+                start_date=model.start_date,
+                area_id=model.area_id,
+                experience_id=model.experience_id,
+                modality=model.modality,
+                embedding=model.embedding,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
+            )
         return None
 
     async def delete(self, job_offer_id: int):
@@ -121,6 +152,8 @@ class JobOfferRepositoryImpl(JobOfferRepository):
         if not model:
             return False
         
-        await self.session.execute(delete(JobOfferModel).where(JobOfferModel.id == job_offer_id))
+        # Soft delete: set deleted_at
+        model.deleted_at = datetime.utcnow()
         await self.session.commit()
+        await self.session.refresh(model)
         return True

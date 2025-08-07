@@ -36,15 +36,8 @@ async def add_student_skill(request: Request, student_skill: StudentSkillCreate,
 async def get_student_skills(student_id: int, session: AsyncSession = Depends(get_session)):
     try:
         student_skill_use_case = StudentSkillUseCaseFactory(session).build()
-
         skills = await student_skill_use_case.get_student_skills(student_id)
-        return [
-            {
-                "student_id": skill.student_id,
-                "skill_id": skill.skill_id
-            }
-            for skill in skills
-        ]
+        return [StudentSkillResponse(student_id=skill.student_id, skill_id=skill.skill_id) for skill in skills]
     except Exception as e:
         logger.error(f"Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")

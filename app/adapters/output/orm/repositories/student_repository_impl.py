@@ -1,11 +1,12 @@
-from app.domain.repositories.student_repository import StudentRepository
 from app.domain.entities.student import Student
-from app.adapters.output.orm.models.student_model import StudentModel
 from sqlalchemy.future import select
-from sqlalchemy import delete
+from datetime import datetime
 from typing import Optional
+
 from app.adapters.output.orm.models.student_skill_model import StudentSkillModel
 from app.adapters.output.orm.models.student_interest_model import StudentInterestModel
+from app.adapters.output.orm.models.student_model import StudentModel
+from app.domain.repositories.student_repository import StudentRepository
 from app.adapters.output.orm.repositories.experience_detail_repository_impl import get_experience_name_by_id_impl
 from app.adapters.output.orm.models.interest_model import InterestModel
 
@@ -59,6 +60,7 @@ class StudentRepositoryImpl(StudentRepository):
         return enriched_students
 
     async def save(self, student: Student):
+        now = datetime.utcnow()
         model = StudentModel(
             name=student.name,
             email=student.email,
@@ -71,7 +73,10 @@ class StudentRepositoryImpl(StudentRepository):
             preferred_modality=student.preferred_modality,
             experience_id=student.experience_id,
             date_of_birth=student.date_of_birth,
-            embedding=student.embedding
+            embedding=student.embedding,
+            created_at=now,
+            updated_at=now,
+            deleted_at=None
         )
         self.session.add(model)
         await self.session.commit()
@@ -95,7 +100,10 @@ class StudentRepositoryImpl(StudentRepository):
                 preferred_modality=model.preferred_modality,
                 experience_id=model.experience_id,
                 date_of_birth=model.date_of_birth,
-                embedding=model.embedding
+                embedding=model.embedding,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             )
         return None
 
@@ -116,7 +124,10 @@ class StudentRepositoryImpl(StudentRepository):
                 preferred_modality=model.preferred_modality,
                 experience_id=model.experience_id,
                 date_of_birth=model.date_of_birth,
-                embedding=model.embedding
+                embedding=model.embedding,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             )
         return None
 
@@ -139,7 +150,10 @@ class StudentRepositoryImpl(StudentRepository):
                 preferred_modality=model.preferred_modality,
                 experience_id=model.experience_id,
                 date_of_birth=model.date_of_birth,
-                embedding=model.embedding
+                embedding=model.embedding,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
                 )
             )
         return students
@@ -160,9 +174,27 @@ class StudentRepositoryImpl(StudentRepository):
             model.experience_id = student.experience_id
             model.date_of_birth = student.date_of_birth
             model.embedding = student.embedding
+            model.updated_at = datetime.utcnow()
             await self.session.commit()
             await self.session.refresh(model)
-            return student
+            return Student(
+                id=model.id,
+                name=model.name,
+                email=model.email,
+                career=model.career,
+                academic_cycle=model.academic_cycle,
+                location=model.location,
+                main_motivation=model.main_motivation,
+                description=model.description,
+                weekly_availability=model.weekly_availability,
+                preferred_modality=model.preferred_modality,
+                experience_id=model.experience_id,
+                date_of_birth=model.date_of_birth,
+                embedding=model.embedding,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
+            )
         return None
 
     async def delete(self, student_id: int) -> bool:
@@ -171,6 +203,8 @@ class StudentRepositoryImpl(StudentRepository):
         if not model:
             return False
 
-        await self.session.execute(delete(StudentModel).where(StudentModel.id == student_id))
+        # Soft delete: set deleted_at
+        model.deleted_at = datetime.utcnow()
         await self.session.commit()
+        await self.session.refresh(model)
         return True

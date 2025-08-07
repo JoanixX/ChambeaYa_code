@@ -1,6 +1,7 @@
 from typing import Dict, Any, Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
+from datetime import datetime
 
 from app.adapters.output.orm.repositories.job_offer_repository_impl import JobOfferRepositoryImpl
 from app.application.ports.job_offer_port import JobOfferPort
@@ -24,12 +25,14 @@ class JobOfferPortImpl(JobOfferPort):
             approximated_salary=job_offer_data['approximated_salary'],
             duration=job_offer_data['duration'],
             start_date=job_offer_data['start_date'],
-            area_id=job_offer_data("area_id", None),
-            experience_id=job_offer_data("experience_id", None),
+            area_id=job_offer_data.get('area_id', None),
+            experience_id=job_offer_data.get('experience_id', None),
             modality=job_offer_data['modality'],
-            embedding={}
+            embedding={},
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            deleted_at=None
         )
-    
         saved_job_offer = await self.job_offer_repo.save(job_offer)
         return saved_job_offer
     
@@ -46,7 +49,6 @@ class JobOfferPortImpl(JobOfferPort):
         existing_job_offer = await self.job_offer_repo.find_by_id(job_offer_id)
         if not existing_job_offer:
             return None
-        
         updated_job_offer = JobOffer(
             id=job_offer_id,
             company_id=job_offer_data.get('company_id', existing_job_offer.company_id),
@@ -56,10 +58,13 @@ class JobOfferPortImpl(JobOfferPort):
             approximated_salary=job_offer_data.get('approximated_salary', existing_job_offer.approximated_salary),
             duration=job_offer_data.get('duration', existing_job_offer.duration),
             start_date=job_offer_data.get('start_date', existing_job_offer.start_date),
-            area_id=job_offer_data.get('area_id', None),
-            experience_id=job_offer_data.get('experience_id', None),
+            area_id=job_offer_data.get('area_id', existing_job_offer.area_id),
+            experience_id=job_offer_data.get('experience_id', existing_job_offer.experience_id),
             modality=job_offer_data.get('modality', existing_job_offer.modality),
-            embedding=job_offer_data.get('embedding', existing_job_offer.embedding)
+            embedding=job_offer_data.get('embedding', existing_job_offer.embedding),
+            created_at=existing_job_offer.created_at,
+            updated_at=datetime.utcnow(),
+            deleted_at=existing_job_offer.deleted_at
         )
         return await self.job_offer_repo.update(updated_job_offer)
     

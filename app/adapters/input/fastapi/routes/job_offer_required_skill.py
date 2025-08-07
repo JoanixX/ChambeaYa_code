@@ -37,9 +37,8 @@ async def add_job_offer_required_skill(
 async def get_job_offer_required_skills(job_offer_id: int, session: AsyncSession = Depends(get_session)):
     try:
         job_offer_required_skill_use_case = JobOfferRequiredSkillUseCaseFactory(session).build()
-
         skills = await job_offer_required_skill_use_case.get_job_offer_required_skills(job_offer_id)
-        return [skill.__dict__ for skill in skills]
+        return [JobOfferRequiredSkillResponse(job_offer_id=skill.job_offer_id, skill_id=skill.skill_id) for skill in skills]
     except Exception as e:
         logger.error(f"Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")

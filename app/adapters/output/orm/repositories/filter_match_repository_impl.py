@@ -2,6 +2,7 @@ from app.domain.repositories.filter_match_repository import FilterMatchRepositor
 from app.domain.entities.filter_match import FilterMatch
 from app.adapters.output.orm.models.filter_match_model import FilterMatchModel
 from sqlalchemy import select
+from datetime import datetime
 
 class FilterMatchRepositoryImpl(FilterMatchRepository):
     def __init__(self, session):
@@ -23,9 +24,11 @@ class FilterMatchRepositoryImpl(FilterMatchRepository):
         if row:
             return FilterMatch(
                 job_offer_id=row.job_offer_id,
-                # student_id=row.student_id if hasattr(row, "student_id") else None,
                 status=row.status,
-                stage=row.stage
+                stage=row.stage,
+                created_at=row.created_at,
+                updated_at=row.updated_at,
+                deleted_at=row.deleted_at
             )
         return None
     
@@ -45,8 +48,10 @@ class FilterMatchRepositoryImpl(FilterMatchRepository):
         if row:
             return FilterMatch(
                 job_offer_id=row.job_offer_id if hasattr(row, "job_offer_id") else None,
-                # student_id=row.student_id,
                 status=row.status,
-                stage=row.stage
+                stage=row.stage,
+                created_at=row.created_at,
+                updated_at=row.updated_at,
+                deleted_at=row.deleted_at
             )
         return None

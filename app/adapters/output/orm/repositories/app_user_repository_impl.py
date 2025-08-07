@@ -3,6 +3,7 @@ from sqlalchemy.future import select
 from app.adapters.output.orm.models.app_user_model import AppUserModel
 from app.domain.entities.app_user import AppUser, UserRole
 from app.domain.repositories.app_user_repository import AppUserRepository
+from datetime import datetime
 
 class AppUserRepositoryImpl(AppUserRepository):
     def __init__(self, session: AsyncSession):
@@ -18,16 +19,23 @@ class AppUserRepositoryImpl(AppUserRepository):
                 email=row.email,
                 password_hash=row.password_hash,
                 role=role,
-                related_id=row.related_id
+                related_id=row.related_id,
+                created_at=row.created_at,
+                updated_at=row.updated_at,
+                deleted_at=row.deleted_at
             )
         return None
 
     async def save(self, user: AppUser) -> AppUser:
+        now = datetime.utcnow()
         model = AppUserModel(
             email=user.email,
             password_hash=user.password_hash,
             role=user.role.value,
-            related_id=user.related_id
+            related_id=user.related_id,
+            created_at=now,
+            updated_at=now,
+            deleted_at=None
         )
         self.session.add(model)
         await self.session.commit()
@@ -38,5 +46,8 @@ class AppUserRepositoryImpl(AppUserRepository):
             email=model.email,
             password_hash=model.password_hash,
             role=role,
-            related_id=model.related_id
+            related_id=model.related_id,
+            created_at=model.created_at,
+            updated_at=model.updated_at,
+            deleted_at=model.deleted_at
         )

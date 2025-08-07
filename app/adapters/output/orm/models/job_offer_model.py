@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, ForeignKey, Date, JSON, VARCHAR, SMALLINT
-from app.infraestructure.database.base import Base  
+from sqlalchemy import Column, Integer, ForeignKey, Date 
+from sqlalchemy import JSON, VARCHAR, SMALLINT, DateTime
+from app.infraestructure.database.base import Base 
+from sqlalchemy.sql import func 
 
 class JobOfferModel(Base):
     __tablename__ = 'job_offer'
@@ -15,3 +17,6 @@ class JobOfferModel(Base):
     experience_id = Column(Integer, ForeignKey('experience_detail.id'), nullable=False)
     modality = Column(SMALLINT, nullable=False)
     embedding = Column(JSON, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now())
+    deleted_at = Column(DateTime, nullable=True)

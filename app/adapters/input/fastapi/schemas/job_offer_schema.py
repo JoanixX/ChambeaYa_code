@@ -49,3 +49,6 @@ class JobOfferResponse(BaseModel):
     experience_id: int 
     modality: int
     embedding: Optional[dict]
+    created_at: str
+    updated_at: str
+    deleted_at: str = None

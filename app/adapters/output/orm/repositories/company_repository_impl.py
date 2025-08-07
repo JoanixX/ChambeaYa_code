@@ -4,12 +4,14 @@ from app.adapters.output.orm.models.company_model import CompanyModel
 from sqlalchemy.future import select
 from sqlalchemy import delete
 from typing import Optional
+from datetime import datetime
 
 class CompanyRepositoryImpl(CompanyRepository):
     def __init__(self, session):
         self.session = session
 
     async def save(self, company: Company):
+        now = datetime.utcnow()
         model = CompanyModel(
             RUC=company.RUC,
             name=company.name,
@@ -18,7 +20,10 @@ class CompanyRepositoryImpl(CompanyRepository):
             area_id=company.area_id,
             contact_name=company.contact_name,
             email=company.email,
-            company_culture=company.company_culture
+            company_culture=company.company_culture,
+            created_at=now,
+            updated_at=now,
+            deleted_at=None
         )
         self.session.add(model)
         await self.session.commit()
@@ -38,7 +43,10 @@ class CompanyRepositoryImpl(CompanyRepository):
                 area_id=model.area_id,
                 contact_name=model.contact_name,
                 email=model.email,
-                company_culture=model.company_culture
+                company_culture=model.company_culture,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             )
         return None
 
@@ -55,7 +63,10 @@ class CompanyRepositoryImpl(CompanyRepository):
                 area_id=model.area_id,
                 contact_name=model.contact_name,
                 email=model.email,
-                company_culture=model.company_culture
+                company_culture=model.company_culture,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             )
         return None
 
@@ -72,7 +83,10 @@ class CompanyRepositoryImpl(CompanyRepository):
                 area_id=model.area_id,
                 contact_name=model.contact_name,
                 email=model.email,
-                company_culture=model.company_culture
+                company_culture=model.company_culture,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             )
         return None
 
@@ -90,7 +104,10 @@ class CompanyRepositoryImpl(CompanyRepository):
                 area_id=model.area_id,
                 contact_name=model.contact_name,
                 email=model.email,
-                company_culture=model.company_culture
+                company_culture=model.company_culture,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             ))
         return companies
 
@@ -106,9 +123,23 @@ class CompanyRepositoryImpl(CompanyRepository):
             model.contact_name = company.contact_name
             model.email = company.email
             model.company_culture = company.company_culture
+            model.updated_at = datetime.utcnow()
             await self.session.commit()
             await self.session.refresh(model)
-            return company
+            return Company(
+                id=model.id,
+                RUC=model.RUC,
+                name=model.name,
+                location=model.location,
+                industry=model.industry,
+                area_id=model.area_id,
+                contact_name=model.contact_name,
+                email=model.email,
+                company_culture=model.company_culture,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
+            )
         return None
 
     async def delete(self, company_id: int):
@@ -117,6 +148,8 @@ class CompanyRepositoryImpl(CompanyRepository):
         if not model:
             return False
 
-        await self.session.execute(delete(CompanyModel).where(CompanyModel.id == company_id))
+        # Soft delete: set deleted_at
+        model.deleted_at = datetime.utcnow()
         await self.session.commit()
+        await self.session.refresh(model)
         return True

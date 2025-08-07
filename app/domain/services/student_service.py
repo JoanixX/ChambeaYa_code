@@ -1,5 +1,6 @@
 from app.domain.entities.student import Student
 from app.domain.repositories.student_repository import StudentRepository
+from datetime import datetime
 from typing import Dict, Any, Optional
 
 class StudentService:
@@ -11,7 +12,9 @@ class StudentService:
 
     async def register_student(self, student_data: Dict[str, Any]) -> int:
         student = self.student_entity(student_data)
-
+        student.created_at = datetime.utcnow()
+        student.updated_at = datetime.utcnow()
+        student.deleted_at = None
         saved_model = await self.student_repo.save(student)
         if saved_model:
             return saved_model.id
@@ -42,16 +45,27 @@ class StudentService:
             preferred_modality=student_data.get("preferred_modality", existing_student.preferred_modality),
             experience_id=student_data.get("experience_id", existing_student.experience_id),
             date_of_birth=student_data.get("date_of_birth", existing_student.date_of_birth),
-            embedding=student_data.get("embedding", existing_student.embedding)
+            embedding=student_data.get("embedding", existing_student.embedding),
+            created_at=existing_student.created_at,
+            updated_at=datetime.utcnow(),
+            deleted_at=existing_student.deleted_at
         )
-
         await self.student_repo.update(updated_student)
         return updated_student
 
-    async def delete_student(self, student_id: int) -> bool:
-        return await self.student_repo.delete(student_id)
+    async def delete_student(self, student_id: int, soft_delete: bool = False) -> bool:
+        if soft_delete:
+            existing_student = await self.student_repo.find_by_id(student_id)
+            if not existing_student:
+                return False
+            existing_student.deleted_at = datetime.utcnow()
+            await self.student_repo.update(existing_student)
+            return True
+        else:
+            return await self.student_repo.delete(student_id)
 
     def student_entity(self, student_data: Dict[str, Any]) -> Student:
+        # No permitir manipulación de campos temporales por usuario
         return Student(
             id=0,  # Se asignará automáticamente por la base de datos
             name=student_data.get("name", None),
@@ -65,5 +79,8 @@ class StudentService:
             preferred_modality=student_data.get("preferred_modality", None),
             experience_id=student_data.get("experience_id", None),
             date_of_birth=student_data.get("date_of_birth", None),
-            embedding=student_data.get("embedding", {})
+            embedding=student_data.get("embedding", {}),
+            created_at=None,
+            updated_at=None,
+            deleted_at=None
         )
