@@ -4,11 +4,12 @@ from app.domain.services.job_offer_service import JobOfferService
 from typing import Dict, Any, List
 
 class JobOfferUseCase:
-    async def get_enriched_job_offers(self) -> List[JobOffer]:
-        return await self.job_offer_port.get_enriched_job_offers()
     def __init__(self, job_offer_port: JobOfferPort, job_offer_service: JobOfferService):
         self.job_offer_port = job_offer_port
         self.job_offer_service = job_offer_service
+
+    async def get_enriched_job_offers(self) -> List[JobOffer]:
+        return await self.job_offer_port.get_enriched_job_offers()
 
     async def register_job_offer(self, job_offer_data: Dict[str, Any]) -> Dict[str, Any]:
         if not await self.job_offer_port.validate_job_offer_data(job_offer_data):

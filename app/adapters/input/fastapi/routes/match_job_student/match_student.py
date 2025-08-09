@@ -1,32 +1,35 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List
+import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infraestructure.database.connection import get_session
-from app.adapters.output.orm.repositories.student_repository_impl import StudentRepositoryImpl
-from app.adapters.output.orm.repositories.job_offer_repository_impl import JobOfferRepositoryImpl
-from app.domain.services.match_job_student_service import MatchJobStudentService
-from app.adapters.output.orm.repositories.match_job_student_repository_impl import MatchJobStudentRepositoryImpl
-from app.adapters.output.ports.match_job_student_port_impl import MatchJobStudentPortImpl
+
+from app.adapters.input.fastapi.schemas.match_job_student_schema import (MatchJobStudentCreate, MatchJobStudentResponse)
+from app.application.factories.match_job_student_factory import MatchJobStudentUseCaseFactory
 
 router = APIRouter()
 
-@router.post("/aimodel/student/best_job_offers/{student_id}", response_model=dict, tags=["AI Model"])
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@router.post("/aimodel/student/best_job_offers/{student_id}", response_model=List[MatchJobStudentResponse], tags=["AI Model"])
 async def best_job_offers(student_id: int, session: AsyncSession = Depends(get_session)):
-    student_repo = StudentRepositoryImpl(session)
-    student = await student_repo.find_by_id(student_id)
-    if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
-
-    job_offer_repo = JobOfferRepositoryImpl(session)
-    job_offers = await job_offer_repo.get_all()
-
-    match_js_repo = MatchJobStudentRepositoryImpl(session)
-    match_js_port = MatchJobStudentPortImpl(session)
-    service = MatchJobStudentService(match_js_repo, match_js_port, session)
+    use_case = MatchJobStudentUseCaseFactory(session).build()
     try:
-        response = await service.match_best_from_student(student, job_offers)
+        result = await use_case.match_job_students(student_id)
+        logger.info(f"Respuesta IA: {result}")
+        matches = result.get("matches", []) if isinstance(result, dict) else result
     except Exception as e:
-        raise HTTPException(status_code=502, detail=str(e))
+        logger.error(f"Error en la API de IA: {str(e)}")
+        raise HTTPException(status_code=502, detail=f"Error en la API de IA: {str(e)}")
 
-    return response
+    if not matches:
+        logger.error("No se pudieron obtener las ofertas de trabajo")
+        raise HTTPException(status_code=500, detail="No se pudieron obtener las ofertas de trabajo")
+
+    for item in matches:
+        if "id" not in item:
+            item["id"] = None
+    logger.info(f"Matches procesados: {matches}")
+    return [MatchJobStudentResponse(**item) for item in matches]

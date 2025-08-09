@@ -14,7 +14,6 @@ from app.adapters.input.fastapi.routes.experience_detail import router as experi
 from app.adapters.input.fastapi.routes.interest import router as interest_router
 from app.adapters.input.fastapi.routes.job_offer_required_skill import router as job_offer_required_skill_router
 from app.adapters.input.fastapi.routes.job_offer import router as job_offer_router
-from app.adapters.input.fastapi.routes.login_app import router as login_router
 from app.adapters.input.fastapi.routes.skill import router as skill_router
 from app.adapters.input.fastapi.routes.student_interest import router as student_interest_router
 from app.adapters.input.fastapi.routes.student_skill import router as student_skill_router
@@ -49,7 +48,6 @@ app.include_router(filter_match_router, prefix="/api")
 app.include_router(interest_router, prefix="/api")
 app.include_router(job_offer_required_skill_router, prefix="/api")
 app.include_router(job_offer_router, prefix="/api")
-app.include_router(login_router, prefix="/api")
 app.include_router(match_job_student_router, prefix="/api")
 app.include_router(skill_router, prefix="/api")
 app.include_router(student_interest_router, prefix="/api")

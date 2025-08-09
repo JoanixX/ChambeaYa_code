@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from app.domain.entities.job_offer import JobOffer
+from app.domain.entities.filter_match import FilterMatch
 from typing import Dict, Any
 
 class FilterMatchPort(ABC):
@@ -17,4 +17,14 @@ class FilterMatchPort(ABC):
 
     @abstractmethod
     async def preprocess_all_students(self, student_ids: list[int]) -> list[Dict[str, Any]]:
+        pass
+
+    @abstractmethod
+    async def register_filter_match_student(self, 
+        student_id: int, filter_match_data: Dict[str, Any]) -> FilterMatch:
+        pass
+
+    @abstractmethod
+    async def register_filter_match_job_offer(self, 
+        job_offer_id: int, filter_match_data: Dict[str, Any]) -> FilterMatch:
         pass

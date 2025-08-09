@@ -7,5 +7,5 @@ class AppUserPort(ABC):
         pass
     
     @abstractmethod
-    async def save(self, user: AppUser) -> AppUser:
+    async def register_user(self, user: AppUser) -> AppUser:
         pass

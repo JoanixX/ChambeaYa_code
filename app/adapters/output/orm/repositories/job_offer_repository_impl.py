@@ -1,16 +1,58 @@
-from app.adapters.output.orm.models.job_offer_model import JobOfferModel
-from app.domain.entities.job_offer import JobOffer
-from app.domain.repositories.job_offer_repository import JobOfferRepository
 from sqlalchemy.future import select
 from sqlalchemy import delete
 from typing import Optional
 
+from app.adapters.output.orm.models.job_offer_model import JobOfferModel
+from app.domain.entities.job_offer import JobOffer
+from app.domain.repositories.job_offer_repository import JobOfferRepository
+from app.adapters.output.orm.models.job_offer_required_skill_model import JobOfferRequiredSkillModel
+from app.adapters.output.orm.models.skill_model import SkillModel
+from app.adapters.output.orm.repositories.area_repository_impl import get_area_name_by_id_impl
+from app.adapters.output.orm.repositories.experience_detail_repository_impl import get_experience_name_by_id_impl
+
 class JobOfferRepositoryImpl(JobOfferRepository):
-    async def get_enriched_job_offers(self, session) -> list:
-        # Aquí se puede enriquecer con joins a skills, area, experience, etc. Por ahora igual a get_all
-        return await self.get_all()
     def __init__(self, session):
         self.session = session
+
+    async def get_enriched_job_offers(self, session) -> list:
+        job_offers_result = await session.execute(select(JobOfferModel))
+        job_offer_models = job_offers_result.scalars().all()
+        enriched_job_offers = []
+        for j in job_offer_models:
+            area_id = None
+            if j.area_id:
+                area_id = await get_area_name_by_id_impl(session, j.area_id)
+
+            experience_id = None
+            if j.experience_id:
+                experience_id = await get_experience_name_by_id_impl(session, j.experience_id)
+
+            skill_links_result = await session.execute(
+                select(JobOfferRequiredSkillModel).where(JobOfferRequiredSkillModel.job_offer_id == j.id))
+            skill_links = skill_links_result.scalars().all()
+            skills = []
+            for link in skill_links:
+                skill_result = await session.execute(select(SkillModel).where(SkillModel.id == link.skill_id))
+                skill_obj = skill_result.scalar_one_or_none()
+                if skill_obj:
+                    skills.append({"name": skill_obj.name})
+
+            enriched_job_offers.append({
+                "id": j.id,
+                "company_id": j.company_id,
+                "title": j.title,
+                "description": j.description,
+                "required_hours": j.required_hours,
+                "approximated_salary": j.approximated_salary,
+                "duration": j.duration,
+                "start_date": j.start_date.isoformat() if j.start_date else None,
+                "area_id": area_id,
+                "experience_id": experience_id,
+                "required_skills": skills,
+                "modality": j.modality,
+                "embedding": j.embedding
+            })
+        return enriched_job_offers
 
     async def save(self, job_offer: JobOffer):
         model = JobOfferModel(
@@ -47,7 +89,10 @@ class JobOfferRepositoryImpl(JobOfferRepository):
                 area_id=model.area_id,
                 experience_id=model.experience_id,
                 modality=model.modality,
-                embedding=model.embedding
+                embedding=model.embedding,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             )
         return None
 
@@ -68,7 +113,10 @@ class JobOfferRepositoryImpl(JobOfferRepository):
                 area_id=model.area_id,
                 experience_id=model.experience_id,
                 modality=model.modality,
-                embedding=model.embedding
+                embedding=model.embedding,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             ))
         return job_offers
 
@@ -90,7 +138,10 @@ class JobOfferRepositoryImpl(JobOfferRepository):
                     area_id=model.area_id,
                     experience_id=model.experience_id,
                     modality=model.modality,
-                    embedding=model.embedding
+                    embedding=model.embedding,
+                    created_at=model.created_at,
+                    updated_at=model.updated_at,
+                    deleted_at=model.deleted_at
                 )
             )
         return job_offers

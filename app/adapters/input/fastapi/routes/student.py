@@ -24,9 +24,9 @@ async def register_student(request: Request, student: StudentCreate, session: As
 
         logger.info("Ejecutando caso de uso...")
         result = await student_use_case.register_student(student.dict())
-        
         logger.info(f"Estudiante registrado exitosamente: {result}")
         return JSONResponse(content=result)
+    
     except ValueError as e:
         logger.error(f"Error de validación: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
@@ -39,14 +39,8 @@ async def get_all_students(session: AsyncSession = Depends(get_session)):
     try:
         student_use_case = StudentUseCaseFactory(session).build()
         students = await student_use_case.get_all_students()
-
-        def serialize_student(s):
-            d = s.__dict__.copy()
-            if d.get("date_of_birth"):
-                d["date_of_birth"] = d["date_of_birth"].isoformat()
-            return d
-
-        return [serialize_student(s) for s in students]
+        return [StudentResponse(**s.__dict__).model_dump() for s in students]
+    
     except Exception as e:
         logger.error(f"Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
@@ -56,8 +50,8 @@ async def get_student_by_id(student_id: int, session: AsyncSession = Depends(get
     try:
         student_use_case = StudentUseCaseFactory(session).build()
         student = await student_use_case.get_student(student_id)
-
-        return student.__dict__
+        return StudentResponse(**student.__dict__).model_dump()
+    
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -69,8 +63,8 @@ async def update_student(student_id: int, student: StudentCreate, session: Async
     try:
         student_use_case = StudentUseCaseFactory(session).build()
         updated_student = await student_use_case.update_student(student_id, student.dict())
-
-        return updated_student.__dict__
+        return StudentResponse(**updated_student.__dict__).model_dump()
+    
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -82,8 +76,8 @@ async def delete_student(student_id: int, session: AsyncSession = Depends(get_se
     try:
         student_use_case = StudentUseCaseFactory(session).build()
         result = await student_use_case.delete_student(student_id)
-
         return result
+    
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:

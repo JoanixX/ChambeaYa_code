@@ -1,13 +1,16 @@
-from app.domain.repositories.student_repository import StudentRepository
-from app.domain.entities.student import Student
-from app.adapters.output.orm.models.student_model import StudentModel
 from sqlalchemy.future import select
 from sqlalchemy import delete
 from typing import Optional
+
+from app.domain.repositories.student_repository import StudentRepository
+from app.domain.entities.student import Student
+from app.adapters.output.orm.models.student_model import StudentModel
 from app.adapters.output.orm.models.student_skill_model import StudentSkillModel
 from app.adapters.output.orm.models.student_interest_model import StudentInterestModel
 from app.adapters.output.orm.repositories.experience_detail_repository_impl import get_experience_name_by_id_impl
 from app.adapters.output.orm.models.interest_model import InterestModel
+from app.adapters.output.orm.models.skill_model import SkillModel
+from app.adapters.output.orm.repositories.skill_repository_impl import SkillRepositoryImpl
 
 class StudentRepositoryImpl(StudentRepository):
     def __init__(self, session):
@@ -18,17 +21,18 @@ class StudentRepositoryImpl(StudentRepository):
         student_models = students_result.scalars().all()
         enriched_students = []
         for s in student_models:
-            experience_name = None
+            experience_id = None
             if s.experience_id:
-                experience_name = await get_experience_name_by_id_impl(session, s.experience_id)
+                experience_id = await get_experience_name_by_id_impl(session, s.experience_id)
 
             skill_links_result = await session.execute(select(StudentSkillModel).where(StudentSkillModel.student_id == s.id))
             skill_links = skill_links_result.scalars().all()
             skills = []
             for link in skill_links:
-                skill = await get_skill_by_id_impl(session, link.skill_id)
-                if skill:
-                    skills.append({"name": skill.name})
+                skill_result = await session.execute(select(SkillModel).where(SkillModel.id == link.skill_id))
+                skill_obj = skill_result.scalar_one_or_none()
+                if skill_obj:
+                    skills.append({"name": skill_obj.name})
 
             interest_links_result = await session.execute(select(StudentInterestModel).where(StudentInterestModel.student_id == s.id))
             interest_links = interest_links_result.scalars().all()
@@ -49,8 +53,7 @@ class StudentRepositoryImpl(StudentRepository):
                 "description": s.description,
                 "weekly_availability": s.weekly_availability,
                 "preferred_modality": s.preferred_modality,
-                "experience": experience_name,
-                "experience_id": s.experience_id,
+                "experience_id": experience_id,
                 "skills": skills,
                 "interests": interests,
                 "date_of_birth": s.date_of_birth.isoformat() if s.date_of_birth else None,
@@ -95,7 +98,10 @@ class StudentRepositoryImpl(StudentRepository):
                 preferred_modality=model.preferred_modality,
                 experience_id=model.experience_id,
                 date_of_birth=model.date_of_birth,
-                embedding=model.embedding
+                embedding=model.embedding,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             )
         return None
 
@@ -116,7 +122,10 @@ class StudentRepositoryImpl(StudentRepository):
                 preferred_modality=model.preferred_modality,
                 experience_id=model.experience_id,
                 date_of_birth=model.date_of_birth,
-                embedding=model.embedding
+                embedding=model.embedding,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             )
         return None
 
@@ -127,19 +136,22 @@ class StudentRepositoryImpl(StudentRepository):
         for model in models:
             students.append(
                 Student (
-                id=model.id,
-                name=model.name,
-                email=model.email,
-                career=model.career,
-                academic_cycle=model.academic_cycle,
-                location=model.location,
-                main_motivation=model.main_motivation,
-                description=model.description,
-                weekly_availability=model.weekly_availability,
-                preferred_modality=model.preferred_modality,
-                experience_id=model.experience_id,
-                date_of_birth=model.date_of_birth,
-                embedding=model.embedding
+                    id=model.id,
+                    name=model.name,
+                    email=model.email,
+                    career=model.career,
+                    academic_cycle=model.academic_cycle,
+                    location=model.location,
+                    main_motivation=model.main_motivation,
+                    description=model.description,
+                    weekly_availability=model.weekly_availability,
+                    preferred_modality=model.preferred_modality,
+                    experience_id=model.experience_id,
+                    date_of_birth=model.date_of_birth,
+                    embedding=model.embedding,
+                    created_at=model.created_at,
+                    updated_at=model.updated_at,
+                    deleted_at=model.deleted_at
                 )
             )
         return students

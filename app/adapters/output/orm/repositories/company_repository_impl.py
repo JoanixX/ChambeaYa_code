@@ -11,7 +11,7 @@ class CompanyRepositoryImpl(CompanyRepository):
 
     async def save(self, company: Company):
         model = CompanyModel(
-            RUC=company.RUC,
+            ruc=company.ruc,
             name=company.name,
             location=company.location,
             industry=company.industry,
@@ -31,31 +31,37 @@ class CompanyRepositoryImpl(CompanyRepository):
         if model:
             return Company(
                 id=model.id,
-                RUC=model.RUC,
+                ruc=model.ruc,
                 name=model.name,
                 location=model.location,
                 industry=model.industry,
                 area_id=model.area_id,
                 contact_name=model.contact_name,
                 email=model.email,
-                company_culture=model.company_culture
+                company_culture=model.company_culture,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             )
         return None
 
     async def find_by_ruc(self, ruc: str) -> Optional[Company]:
-        result = await self.session.execute(select(CompanyModel).where(CompanyModel.RUC == ruc))
+        result = await self.session.execute(select(CompanyModel).where(CompanyModel.ruc == ruc))
         model = result.scalar_one_or_none()
         if model:
             return Company(
                 id=model.id,
-                RUC=model.RUC,
+                ruc=model.ruc,
                 name=model.name,
                 location=model.location,
                 industry=model.industry,
                 area_id=model.area_id,
                 contact_name=model.contact_name,
                 email=model.email,
-                company_culture=model.company_culture
+                company_culture=model.company_culture,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             )
         return None
 
@@ -65,14 +71,17 @@ class CompanyRepositoryImpl(CompanyRepository):
         if model:
             return Company(
                 id=model.id,
-                RUC=model.RUC,
+                ruc=model.ruc,
                 name=model.name,
                 location=model.location,
                 industry=model.industry,
                 area_id=model.area_id,
                 contact_name=model.contact_name,
                 email=model.email,
-                company_culture=model.company_culture
+                company_culture=model.company_culture,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             )
         return None
 
@@ -83,14 +92,17 @@ class CompanyRepositoryImpl(CompanyRepository):
         for model in models:
             companies.append(Company(
                 id=model.id,
-                RUC=model.RUC,
+                ruc=model.ruc,
                 name=model.name,
                 location=model.location,
                 industry=model.industry,
                 area_id=model.area_id,
                 contact_name=model.contact_name,
                 email=model.email,
-                company_culture=model.company_culture
+                company_culture=model.company_culture,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             ))
         return companies
 
@@ -98,7 +110,7 @@ class CompanyRepositoryImpl(CompanyRepository):
         result = await self.session.execute(select(CompanyModel).where(CompanyModel.id == company.id))
         model = result.scalar_one_or_none()
         if model:
-            model.RUC = company.RUC
+            model.ruc = company.ruc
             model.name = company.name
             model.location = company.location
             model.industry = company.industry

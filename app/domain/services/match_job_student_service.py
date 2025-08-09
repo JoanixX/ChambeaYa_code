@@ -1,34 +1,47 @@
-from app.domain.entities.job_offer import JobOffer
+import logging
+from typing import Any, List, Dict
+from datetime import datetime
+
 from app.domain.repositories.match_job_student_repository import MatchJobStudentRepository
-from app.application.ports.match_job_student_port import MatchJobStudentPort
+from app.domain.entities.match_job_student import MatchJobStudent
+from app.domain.entities.job_offer import JobOffer
 from app.domain.entities.student import Student
-from app.infraestructure.ai_client.ai_connection import match_best_job_offers, match_best_students
-from typing import List
 
 class MatchJobStudentService:
-    def __init__(self, match_js_repo: MatchJobStudentRepository, match_js_port: MatchJobStudentPort, session=None):
+    def __init__(self, match_js_repo: MatchJobStudentRepository, session):
         self.match_js_repo = match_js_repo
-        self.match_js_port = match_js_port
         self.session = session
 
     async def match_best_from_student(self, student: Student, job_offers: List[JobOffer]):
-        if not student.embedding:
-            raise ValueError("El estudiante no tiene embedding. Debe preprocesarse primero.")
-        offers_dicts = []
-        for offer in job_offers:
-            if not offer.embedding:
-                raise ValueError(f"La oferta {offer.id} no tiene embedding. Debe preprocesarse primero.")
-            offers_dicts.append({"id": offer.id, "embedding": offer.embedding})
-        student_dict = {"id": student.id, "embedding": student.embedding}
-        return await match_best_job_offers(student_dict, offers_dicts)
+        return await self.match_js_repo.match_best_from_student(student, job_offers)
 
-    async def match_best_from_offer(self, job_offer: JobOffer, students: List[Student]):
-        if not job_offer.embedding:
-            raise ValueError("La oferta no tiene embedding. Debe preprocesarse primero.")
-        students_dicts = []
-        for student in students:
-            if not student.embedding:
-                raise ValueError(f"El estudiante {student.id} no tiene embedding. Debe preprocesarse primero.")
-            students_dicts.append({"id": student.id, "embedding": student.embedding})
-        offer_dict = {"id": job_offer.id, "embedding": job_offer.embedding}
-        return await match_best_students(offer_dict, students_dicts)
+    async def match_best_from_job_offer(self, job_offer: JobOffer, students: List[Student]):
+        return await self.match_js_repo.match_best_from_job_offer(job_offer, students)
+
+    async def register_match_job_student(self, match_data: Dict[str, Any], job_offer_id: int, student_id: int) -> int:
+        match_job_student = self.match_job_student_entity(match_data, job_offer_id, student_id)
+        saved_model = await self.match_js_repo.save(match_job_student)
+        if saved_model:
+            return saved_model.id
+        else:
+            raise ValueError("Error al guardar el match")
+    
+    def match_job_student_entity(
+        self,
+        match_data: Dict[str, Any],
+        job_offer_id: int,
+        student_id: int
+    ) -> MatchJobStudent:
+        if 'match_date' not in match_data:
+            match_data['match_date'] = datetime.now()
+        if 'updated_at' not in match_data:
+            match_data['updated_at'] = datetime.now()
+        return MatchJobStudent(
+            id=0,
+            job_offer_id=job_offer_id,
+            student_id=student_id,
+            score=match_data.get('score', None),
+            match_date=match_data['match_date'],
+            rank= match_data.get('rank', None),
+            updated_at=match_data['updated_at'],
+        )

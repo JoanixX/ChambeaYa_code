@@ -1,6 +1,8 @@
+from typing import Dict, Any, Optional
+from datetime import datetime
+
 from app.domain.entities.company import Company
 from app.domain.repositories.company_repository import CompanyRepository
-from typing import Dict, Any, Optional
 
 class CompanyService:
     def __init__(self, company_repo: CompanyRepository):
@@ -28,7 +30,7 @@ class CompanyService:
 
         updated_company = Company(
             id=company_id,
-            RUC=company_data.get("RUC", existing_company.RUC),
+            ruc=company_data.get("ruc", existing_company.ruc),
             name=company_data.get("name", existing_company.name),
             location=company_data.get("location", existing_company.location),
             industry=company_data.get("industry", existing_company.industry),
@@ -45,14 +47,20 @@ class CompanyService:
         return await self.company_repo.delete(company_id)
     
     def company_entity(self, company_data: Dict[str, Any]) -> Company:
+        if 'created_at' not in company_data:
+            company_data['created_at'] = datetime.now()
+        if 'updated_at' not in company_data:
+            company_data['updated_at'] = datetime.now()
         return Company(
             id=0,  #se asignará automáticamente por la base de datos
-            RUC=company_data["RUC"],
-            name=company_data["name"],
-            location=company_data["location"],
-            industry=company_data["industry"],
-            area_id=company_data["area_id"],
-            contact_name=company_data["contact_name"],
-            email=company_data["email"],
-            company_culture=company_data["company_culture"]
+            ruc=company_data.get("ruc", None),
+            name=company_data.get("name", None),
+            location=company_data.get("location", None),
+            industry=company_data.get("industry", None),
+            area_id=company_data.get("area_id", None),
+            contact_name=company_data.get("contact_name", None),
+            email=company_data.get("email", None),
+            company_culture=company_data.get("company_culture", None),
+            created_at=company_data['created_at'],
+            updated_at=company_data['updated_at']
         )

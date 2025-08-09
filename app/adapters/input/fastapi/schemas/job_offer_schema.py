@@ -14,7 +14,6 @@ class JobOfferCreate(BaseModel):
     area_id: int = Field(..., description="Area ID")
     experience_id: int = Field(..., description="Experience ID")
     modality: int = Field(..., description="Modality")
-    embedding: Optional[dict] = Field(None, description="Embedding")
 
     @field_validator("start_date")
     def start_date_validator(cls, v, info):
@@ -48,4 +47,4 @@ class JobOfferResponse(BaseModel):
     area_id: int
     experience_id: int 
     modality: int
-    embedding: Optional[dict]
+    embedding: Optional[dict] = None

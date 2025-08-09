@@ -6,9 +6,11 @@ from app.domain.services.filter_match_service import FilterMatchService
 from app.adapters.output.ports.filter_match_port_impl import FilterMatchPortImpl
 
 class FilterMatchUseCaseFactory:
-    @staticmethod
-    def create(session: AsyncSession) -> FilterMatchUseCase:
-        filter_match_repo = FilterMatchRepositoryImpl(session)
-        filter_match_port = FilterMatchPortImpl(session)
-        filter_match_service = FilterMatchService(filter_match_repo, session)
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    def build(self) -> FilterMatchUseCase:
+        filter_match_repo = FilterMatchRepositoryImpl(self.session)
+        filter_match_port = FilterMatchPortImpl(self.session)
+        filter_match_service = FilterMatchService(filter_match_repo, self.session)
         return FilterMatchUseCase(filter_match_port, filter_match_service)

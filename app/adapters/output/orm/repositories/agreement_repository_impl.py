@@ -32,7 +32,10 @@ class AgreementRepositoryImpl(AgreementRepository):
                 student_id=model.student_id,
                 status=AgreementStatus(model.status),  # Convertir desde el valor
                 start_date=model.start_date,
-                end_date=model.end_date
+                end_date=model.end_date,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             )
         return None
 
@@ -47,7 +50,10 @@ class AgreementRepositoryImpl(AgreementRepository):
                 student_id=model.student_id,
                 status=AgreementStatus(model.status),  # Convertir desde el valor
                 start_date=model.start_date,
-                end_date=model.end_date
+                end_date=model.end_date,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             ))
         return agreements
 
@@ -62,7 +68,10 @@ class AgreementRepositoryImpl(AgreementRepository):
                 student_id=model.student_id,
                 status=AgreementStatus(model.status),  # Convertir desde el valor
                 start_date=model.start_date,
-                end_date=model.end_date
+                end_date=model.end_date,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             ))
         return agreements
 
@@ -79,7 +88,10 @@ class AgreementRepositoryImpl(AgreementRepository):
                 student_id=model.student_id,
                 status=AgreementStatus(model.status),  # Convertir desde el valor
                 start_date=model.start_date,
-                end_date=model.end_date
+                end_date=model.end_date,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             )
         return None
 
@@ -94,7 +106,10 @@ class AgreementRepositoryImpl(AgreementRepository):
                 student_id=model.student_id,
                 status=AgreementStatus(model.status),  # Convertir desde el valor
                 start_date=model.start_date,
-                end_date=model.end_date
+                end_date=model.end_date,
+                created_at=model.created_at,
+                updated_at=model.updated_at,
+                deleted_at=model.deleted_at
             ))
         return agreements
 
@@ -111,6 +126,7 @@ class AgreementRepositoryImpl(AgreementRepository):
             await self.session.refresh(model)
             return agreement
         return None
+    
     async def delete(self, agreement_id: int):
         result = await self.session.execute(select(AgreementModel).where(AgreementModel.id == agreement_id))
         model = result.scalar_one_or_none()

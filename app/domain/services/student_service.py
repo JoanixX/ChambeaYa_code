@@ -1,6 +1,8 @@
+from typing import Dict, Any, Optional
+from datetime import datetime
+
 from app.domain.entities.student import Student
 from app.domain.repositories.student_repository import StudentRepository
-from typing import Dict, Any, Optional
 
 class StudentService:
     def __init__(self, student_repo: StudentRepository):
@@ -52,6 +54,10 @@ class StudentService:
         return await self.student_repo.delete(student_id)
 
     def student_entity(self, student_data: Dict[str, Any]) -> Student:
+        if 'created_at' not in student_data:
+            student_data['created_at'] = datetime.now()
+        if 'updated_at' not in student_data:
+            student_data['updated_at'] = datetime.now()
         return Student(
             id=0,  # Se asignará automáticamente por la base de datos
             name=student_data.get("name", None),
@@ -65,5 +71,7 @@ class StudentService:
             preferred_modality=student_data.get("preferred_modality", None),
             experience_id=student_data.get("experience_id", None),
             date_of_birth=student_data.get("date_of_birth", None),
-            embedding=student_data.get("embedding", {})
-        )
+            embedding=student_data.get("embedding", {}),
+            created_at=student_data['created_at'],
+            updated_at=student_data['updated_at']
+         )

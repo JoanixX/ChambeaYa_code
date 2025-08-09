@@ -1,6 +1,7 @@
 from typing import Dict, Any, Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
+from datetime import datetime
 
 from app.adapters.output.orm.repositories.job_offer_repository_impl import JobOfferRepositoryImpl
 from app.application.ports.job_offer_port import JobOfferPort
@@ -15,6 +16,10 @@ class JobOfferPortImpl(JobOfferPort):
         self.job_offer_repo = JobOfferRepositoryImpl(session)
 
     async def register_job_offer(self, job_offer_data: Dict[str, Any]) -> JobOffer:
+        if 'created_at' not in job_offer_data:
+            job_offer_data['created_at'] = datetime.now()
+        if 'updated_at' not in job_offer_data:
+            job_offer_data['updated_at'] = datetime.now()
         job_offer = JobOffer(
             id = 0,
             company_id=job_offer_data['company_id'],
@@ -27,9 +32,11 @@ class JobOfferPortImpl(JobOfferPort):
             area_id=job_offer_data("area_id", None),
             experience_id=job_offer_data("experience_id", None),
             modality=job_offer_data['modality'],
-            embedding={}
+            embedding={},
+            created_at=job_offer_data['created_at'],
+            updated_at=job_offer_data['updated_at'],
+            deleted_at=job_offer_data.get('deleted_at')
         )
-    
         saved_job_offer = await self.job_offer_repo.save(job_offer)
         return saved_job_offer
     
@@ -46,7 +53,10 @@ class JobOfferPortImpl(JobOfferPort):
         existing_job_offer = await self.job_offer_repo.find_by_id(job_offer_id)
         if not existing_job_offer:
             return None
-        
+        if 'created_at' not in job_offer_data:
+            job_offer_data['created_at'] = existing_job_offer.created_at
+        if 'updated_at' not in job_offer_data:
+            job_offer_data['updated_at'] = datetime.now()
         updated_job_offer = JobOffer(
             id=job_offer_id,
             company_id=job_offer_data.get('company_id', existing_job_offer.company_id),
@@ -59,7 +69,10 @@ class JobOfferPortImpl(JobOfferPort):
             area_id=job_offer_data.get('area_id', None),
             experience_id=job_offer_data.get('experience_id', None),
             modality=job_offer_data.get('modality', existing_job_offer.modality),
-            embedding=job_offer_data.get('embedding', existing_job_offer.embedding)
+            embedding=job_offer_data.get('embedding', existing_job_offer.embedding),
+            created_at=job_offer_data['created_at'],
+            updated_at=job_offer_data['updated_at'],
+            deleted_at=job_offer_data.get('deleted_at', existing_job_offer.deleted_at)
         )
         return await self.job_offer_repo.update(updated_job_offer)
     

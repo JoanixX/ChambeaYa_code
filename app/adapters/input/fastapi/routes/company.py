@@ -24,9 +24,9 @@ async def register_company(request: Request, company: CompanyCreate, session: As
         
         logger.info("Ejecutando caso de uso...")
         result = await company_use_case.register_company(company.dict())
-
         logger.info(f"Empresa registrada exitosamente: {result}")
         return JSONResponse(content=result)
+    
     except ValueError as e:
         logger.error(f"Error de validación: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
@@ -38,9 +38,9 @@ async def register_company(request: Request, company: CompanyCreate, session: As
 async def get_all_companies(session: AsyncSession = Depends(get_session)):
     try:
         company_use_case = CompanyUseCaseFactory(session).build()
-        company = await company_use_case.get_all_companies()
-
-        return [comp.__dict__ for comp in company]
+        companies = await company_use_case.get_all_companies()
+        return [CompanyResponse(**c.__dict__).model_dump() for c in companies]
+    
     except Exception as e:
         logger.error(f"Error al obtener empresas: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
@@ -50,8 +50,8 @@ async def get_company_by_id(company_id: int, session: AsyncSession = Depends(get
     try:
         company_use_case = CompanyUseCaseFactory(session).build()
         company = await company_use_case.get_company(company_id)
-
-        return company.__dict__
+        return CompanyResponse(**company.__dict__).model_dump()
+    
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -63,8 +63,8 @@ async def update_company(company_id: int, company: CompanyCreate, session: Async
     try:
         company_use_case = CompanyUseCaseFactory(session).build()
         updated_company = await company_use_case.update_company(company_id, company.dict())
-
-        return updated_company.__dict__
+        return CompanyResponse(**updated_company.__dict__).model_dump()
+    
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -76,8 +76,8 @@ async def delete_company(company_id: int, session: AsyncSession = Depends(get_se
     try:
         company_use_case = CompanyUseCaseFactory(session).build()
         deleted_company = await company_use_case.delete_company(company_id)
-
         return deleted_company
+    
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:

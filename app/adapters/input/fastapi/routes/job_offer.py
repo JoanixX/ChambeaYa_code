@@ -39,9 +39,8 @@ async def get_all_job_offers(session: AsyncSession = Depends(get_session)):
     try:
         job_offer_use_case = JobOfferUseCaseFactory(session).build()
         job_offers = await job_offer_use_case.get_all_job_offers()
-
-        # Convertir cada JobOfferResponse a dict para FastAPI (Pydantic v2 usa model_dump, v1 usa dict)
         return [JobOfferResponse(**j.__dict__).model_dump() for j in job_offers]
+    
     except Exception as e:
         logger.error(f"Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
@@ -52,6 +51,7 @@ async def get_job_offer(job_offer_id: int, session: AsyncSession = Depends(get_s
         job_offer_use_case = JobOfferUseCaseFactory(session).build()
         job_offer = await job_offer_use_case.get_job_offer(job_offer_id)
         return JobOfferResponse(**job_offer.__dict__).model_dump()
+    
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -62,9 +62,9 @@ async def get_job_offer(job_offer_id: int, session: AsyncSession = Depends(get_s
 async def get_company_job_offers(company_id: int, session: AsyncSession = Depends(get_session)):
     try:
         job_offer_use_case = JobOfferUseCaseFactory(session).build()
-        job_offer = await job_offer_use_case.get_company_job_offers(company_id)
-        
-        return [j.__dict__ for j in job_offer]
+        job_offers = await job_offer_use_case.get_company_job_offers(company_id)
+        return [JobOfferResponse(**j.__dict__).model_dump() for j in job_offers]
+    
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -76,8 +76,8 @@ async def update_job_offer_endpoint(job_offer_id: int, job_offer: JobOfferCreate
     try:
         job_offer_use_case = JobOfferUseCaseFactory(session).build()
         updated = await job_offer_use_case.update_job_offer(job_offer_id, job_offer.dict())
-        
-        return updated.__dict__
+        return JobOfferResponse(**updated.__dict__).model_dump()
+    
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -89,8 +89,8 @@ async def delete_job_offer_endpoint(job_offer_id: int, session: AsyncSession = D
     try:
         job_offer_use_case = JobOfferUseCaseFactory(session).build()
         deleted = await job_offer_use_case.delete_job_offer(job_offer_id)
-        
         return deleted
+    
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:

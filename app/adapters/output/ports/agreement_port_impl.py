@@ -1,6 +1,7 @@
 from typing import Dict, Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
+from datetime import datetime
 
 from app.application.ports.agreement_port import AgreementPort
 from app.adapters.output.orm.repositories.agreement_repository_impl import AgreementRepositoryImpl
@@ -15,13 +16,20 @@ class AgreementPortImpl(AgreementPort):
         self.agreement_repo = AgreementRepositoryImpl(session)
 
     async def register_agreement(self, agreement_data: Dict[str, Any]) -> Agreement:
+        if 'created_at' not in agreement_data:
+            agreement_data['created_at'] = datetime.now()
+        if 'updated_at' not in agreement_data:
+            agreement_data['updated_at'] = datetime.now()
         agreement = Agreement(
             id=0,
             job_offer_id=agreement_data['job_offer_id'],
             student_id=agreement_data['student_id'],
             status=agreement_data.get('status', AgreementStatus.pending),
             start_date=agreement_data['start_date'],
-            end_date=agreement_data['end_date']
+            end_date=agreement_data['end_date'],
+            created_at=agreement_data['created_at'],
+            updated_at=agreement_data['updated_at'],
+            deleted_at=agreement_data.get('deleted_at')
         )
 
         saved_agreement = await self.agreement_repo.save(agreement)
@@ -47,6 +55,10 @@ class AgreementPortImpl(AgreementPort):
         existing_agreement = await self.agreement_repo.find_by_id(agreement_id)
         if not existing_agreement:
             return None
+        if 'created_at' not in agreement_data:
+            agreement_data['created_at'] = existing_agreement.created_at
+        if 'updated_at' not in agreement_data:
+            agreement_data['updated_at'] = datetime.now()
         
         updated_agreement = Agreement(
             id=agreement_id,
@@ -54,7 +66,10 @@ class AgreementPortImpl(AgreementPort):
             student_id=agreement_data.get('student_id', existing_agreement.student_id),
             status=agreement_data.get('status', existing_agreement.status),
             start_date=agreement_data.get('start_date', existing_agreement.start_date),
-            end_date=agreement_data.get('end_date', existing_agreement.end_date)
+            end_date=agreement_data.get('end_date', existing_agreement.end_date),
+            created_at=agreement_data['created_at'],
+            updated_at=agreement_data['updated_at'],
+            deleted_at=agreement_data.get('deleted_at', existing_agreement.deleted_at)
         )
 
         return await self.agreement_repo.update(updated_agreement)

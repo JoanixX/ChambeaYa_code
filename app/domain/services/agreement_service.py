@@ -1,6 +1,8 @@
+from typing import Optional, Dict, Any
+from datetime import datetime
+
 from app.domain.entities.agreement import Agreement, AgreementStatus
 from app.domain.repositories.agreement_repository import AgreementRepository
-from typing import Optional, Dict, Any
 
 class AgreementService:
     def __init__(self, agreement_repo: AgreementRepository):
@@ -54,11 +56,17 @@ class AgreementService:
         return await self.agreement_repo.delete(agreement_id)
     
     def agreement_entity(self, agreement_data: Dict[str, Any]) -> Agreement:
+        if 'created_at' not in agreement_data:
+            agreement_data['created_at'] = datetime.now()
+        if 'updated_at' not in agreement_data:
+            agreement_data['updated_at'] = datetime.now()
         return Agreement(
             id=0,  # se asignará automáticamente por la base de datos
             job_offer_id=agreement_data["job_offer_id"],
             student_id=agreement_data["student_id"],
             status=AgreementStatus(agreement_data["status"]),
             start_date=agreement_data.get("start_date"),
-            end_date=agreement_data.get("end_date")
+            end_date=agreement_data.get("end_date"),
+            created_at=agreement_data['created_at'],
+            updated_at=agreement_data['updated_at']
         )

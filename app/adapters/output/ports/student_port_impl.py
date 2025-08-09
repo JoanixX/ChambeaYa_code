@@ -1,6 +1,7 @@
 from typing import Dict, Any, Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
+from datetime import datetime
 
 from app.adapters.output.orm.repositories.student_repository_impl import StudentRepositoryImpl
 from app.application.ports.student_port import StudentPort
@@ -15,6 +16,10 @@ class StudentPortImpl(StudentPort):
         self.student_repo = StudentRepositoryImpl(session)
 
     async def register_student(self, student_data: Dict[str, Any]) -> Student:
+        if 'created_at' not in student_data:
+            student_data['created_at'] = datetime.now()
+        if 'updated_at' not in student_data:
+            student_data['updated_at'] = datetime.now()
         student = Student(
             id=0,
             name=student_data["name"],
@@ -28,9 +33,11 @@ class StudentPortImpl(StudentPort):
             preferred_modality=student_data["preferred_modality"],
             experience_id=student_data.get("experience_id", None),
             date_of_birth=student_data["date_of_birth"],
-            embedding={}
+            embedding={},
+            created_at=student_data['created_at'],
+            updated_at=student_data['updated_at'],
+            deleted_at=student_data.get('deleted_at')
         )
-
         saved_student = await self.student_repo.save(student)
         return saved_student
 
@@ -44,7 +51,10 @@ class StudentPortImpl(StudentPort):
         existing_student = await self.student_repo.find_by_id(student_id)
         if not existing_student:
             return None
-
+        if 'created_at' not in student_data:
+            student_data['created_at'] = existing_student.created_at
+        if 'updated_at' not in student_data:
+            student_data['updated_at'] = datetime.now()
         updated_student = Student(
             id=student_id,
             name=student_data.get("name", existing_student.name),
@@ -58,9 +68,11 @@ class StudentPortImpl(StudentPort):
             preferred_modality=student_data.get("preferred_modality", existing_student.preferred_modality),
             experience_id=student_data.get("experience_id", existing_student.experience_id),
             date_of_birth=student_data.get("date_of_birth", existing_student.date_of_birth),
-            embedding=student_data.get("embedding", existing_student.embedding)
+            embedding=student_data.get("embedding", existing_student.embedding),
+            created_at=student_data['created_at'],
+            updated_at=student_data['updated_at'],
+            deleted_at=student_data.get('deleted_at', existing_student.deleted_at)
         )
-
         return await self.student_repo.update(updated_student)
 
     async def delete_student(self, student_id: int) -> bool:

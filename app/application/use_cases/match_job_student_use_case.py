@@ -1,14 +1,28 @@
-from app.application.ports.match_job_student_port import MatchJobStudentPort
-from app.domain.entities.student import Student
-from app.domain.entities.job_offer import JobOffer
 from typing import List
 
+from app.application.ports.match_job_student_port import MatchJobStudentPort
+from app.domain.services.match_job_student_service import MatchJobStudentService
+from app.domain.entities.match_job_student import MatchJobStudent
+
 class MatchJobStudentUseCase:
-    def __init__(self, match_job_student_port: MatchJobStudentPort):
-        self.match_job_student_port = match_job_student_port
+    def __init__(self, match_js_port: MatchJobStudentPort, match_js_service: MatchJobStudentService):
+        self.match_js_port = match_js_port
+        self.match_js_service = match_js_service
 
-    async def match_job_student(self, student: Student, job_offers: List[JobOffer]):
-        return await self.match_job_student_port.match_job_student(student, job_offers)
+    async def register_match_job_student(self, match_job_student: dict) -> MatchJobStudent:
+        match_job_student_id = await self.match_js_service.register_match_job_student(match_job_student)
 
-    async def match_student_job(self, job_offer: JobOffer, students: List[Student]):
-        return await self.match_job_student_port.match_student_job(job_offer, students)
+        if not match_job_student_id:
+            raise ValueError("Error al guardar el match")
+
+        return {
+            "match_job_student_id": match_job_student_id,
+            "registration_success": True,
+            "message": "Match registrado exitosamente"
+        }
+
+    async def match_job_students(self, student_id: int):
+        return await self.match_js_port.match_job_student(student_id)
+
+    async def match_student_jobs(self, job_offer_id: int):
+        return await self.match_js_port.match_student_job(job_offer_id)

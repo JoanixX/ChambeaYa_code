@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, SmallInteger, ForeignKey, Numeric, DateTime
+from sqlalchemy.sql import func
 from app.infraestructure.database.base import Base
 
 class MatchJobStudentModel(Base):
@@ -9,3 +10,5 @@ class MatchJobStudentModel(Base):
     score = Column(Numeric(5,2), nullable=False)
     match_date = Column(DateTime, nullable=False)
     rank = Column(SmallInteger, nullable=False)
+    updated_at = Column(DateTime, nullable=False, default=func.now())
+    deleted_at = Column(DateTime, nullable=True)

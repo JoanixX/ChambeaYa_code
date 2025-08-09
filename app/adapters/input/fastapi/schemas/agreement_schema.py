@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 from datetime import date
-from app.adapters.input.fastapi.validators import not_empty, not_in_future, positive_int
+from app.adapters.input.fastapi.validators import not_empty, start_date_future, positive_int
 from app.domain.entities.agreement import AgreementStatus
 
 class AgreementCreate(BaseModel):
@@ -25,7 +25,7 @@ class AgreementCreate(BaseModel):
 
     @field_validator('start_date')
     def start_date_not_in_future(cls, v, info):
-        return not_in_future(v, 'La fecha de inicio no puede ser en el futuro')
+        return start_date_future(v, 'La fecha de inicio no puede ser en el pasado')
 
     @field_validator('end_date')
     def end_date_after_start(cls, v, info):

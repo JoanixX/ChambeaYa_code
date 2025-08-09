@@ -1,6 +1,8 @@
+from typing import Dict, Any, Optional
+from datetime import datetime
+
 from app.domain.entities.job_offer import JobOffer
 from app.domain.repositories.job_offer_repository import JobOfferRepository
-from typing import Dict, Any, Optional
 
 class JobOfferService:
     async def get_enriched_job_offers(self) -> list:
@@ -50,6 +52,10 @@ class JobOfferService:
         return await self.job_offer_repo.delete(job_offer_id)
     
     def job_offer_entity(self, job_offer_data: Dict[str, Any]) -> JobOffer:
+        if 'created_at' not in job_offer_data:
+            job_offer_data['created_at'] = datetime.now()
+        if 'updated_at' not in job_offer_data:
+            job_offer_data['updated_at'] = datetime.now()
         return JobOffer(
             id=0,
             company_id=job_offer_data.get("company_id", None),
@@ -62,5 +68,7 @@ class JobOfferService:
             area_id=job_offer_data.get("area_id", None),
             experience_id=job_offer_data.get("experience_id", None),
             modality=job_offer_data.get("modality", None),
-            embedding=job_offer_data.get("embedding", {})
+            embedding=job_offer_data.get("embedding", {}),
+            created_at=job_offer_data['created_at'],
+            updated_at=job_offer_data['updated_at']
         )
