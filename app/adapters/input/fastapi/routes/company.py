@@ -18,7 +18,7 @@ async def register_company(request: Request, company: CompanyCreate, session: As
     try:
         body = await request.body()
         logger.info(f"Datos recibidos para registrar empresa: {body.decode()}")
-        logger.info(f"Iniciando registro de la empresa: {company.email}")
+        logger.info(f"Iniciando registro de la empresa: {company.name}")
 
         company_use_case = CompanyUseCaseFactory(session).build()
         

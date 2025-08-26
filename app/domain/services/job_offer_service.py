@@ -5,10 +5,11 @@ from app.domain.entities.job_offer import JobOffer
 from app.domain.repositories.job_offer_repository import JobOfferRepository
 
 class JobOfferService:
-    async def get_enriched_job_offers(self) -> list:
-        return await self.job_offer_repo.get_enriched_job_offers(self.job_offer_repo.session)
     def __init__(self, job_offer_repo: JobOfferRepository):
         self.job_offer_repo = job_offer_repo
+
+    async def get_enriched_job_offers(self) -> list:
+        return await self.job_offer_repo.get_enriched_job_offers(self.job_offer_repo.session)
 
     async def register_job_offer(self, job_offer_data: Dict[str, Any]) -> int:
         job_offer = self.job_offer_entity(job_offer_data)
@@ -39,8 +40,6 @@ class JobOfferService:
             approximated_salary=job_offer_data.get("approximated_salary", existing_job_offer.approximated_salary),
             duration=job_offer_data.get("duration", existing_job_offer.duration),
             start_date=job_offer_data.get("start_date", existing_job_offer.start_date),
-            area_id=job_offer_data.get("area_id", existing_job_offer.area_id),
-            experience_id=job_offer_data.get("experience_id", existing_job_offer.experience_id),
             modality=job_offer_data.get("modality", existing_job_offer.modality),
             embedding=job_offer_data.get("embedding", existing_job_offer.embedding)
         )
@@ -65,8 +64,6 @@ class JobOfferService:
             approximated_salary=job_offer_data.get("approximated_salary", None),
             duration=job_offer_data.get("duration", None),
             start_date=job_offer_data.get("start_date", None),
-            area_id=job_offer_data.get("area_id", None),
-            experience_id=job_offer_data.get("experience_id", None),
             modality=job_offer_data.get("modality", None),
             embedding=job_offer_data.get("embedding", {}),
             created_at=job_offer_data['created_at'],

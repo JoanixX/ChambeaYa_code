@@ -22,17 +22,10 @@ class StudentPortImpl(StudentPort):
             student_data['updated_at'] = datetime.now()
         student = Student(
             id=0,
-            name=student_data["name"],
-            email=student_data["email"],
             career=student_data["career"],
             academic_cycle=student_data["academic_cycle"],
-            location=student_data["location"],
-            main_motivation=student_data["main_motivation"],
-            description=student_data["description"],
             weekly_availability=student_data["weekly_availability"],
             preferred_modality=student_data["preferred_modality"],
-            experience_id=student_data.get("experience_id", None),
-            date_of_birth=student_data["date_of_birth"],
             embedding={},
             created_at=student_data['created_at'],
             updated_at=student_data['updated_at'],
@@ -57,17 +50,10 @@ class StudentPortImpl(StudentPort):
             student_data['updated_at'] = datetime.now()
         updated_student = Student(
             id=student_id,
-            name=student_data.get("name", existing_student.name),
-            email=student_data.get("email", existing_student.email),
             career=student_data.get("career", existing_student.career),
             academic_cycle=student_data.get("academic_cycle", existing_student.academic_cycle),
-            location=student_data.get("location", existing_student.location),
-            main_motivation=student_data.get("main_motivation", existing_student.main_motivation),
-            description=student_data.get("description", existing_student.description),
             weekly_availability=student_data.get("weekly_availability", existing_student.weekly_availability),
             preferred_modality=student_data.get("preferred_modality", existing_student.preferred_modality),
-            experience_id=student_data.get("experience_id", existing_student.experience_id),
-            date_of_birth=student_data.get("date_of_birth", existing_student.date_of_birth),
             embedding=student_data.get("embedding", existing_student.embedding),
             created_at=student_data['created_at'],
             updated_at=student_data['updated_at'],
@@ -82,9 +68,7 @@ class StudentPortImpl(StudentPort):
         logger.info(f"Validando datos del estudiante: {student_data}")
 
         # Validaciones básicas
-        required_fields = ['name', 'email', 'date_of_birth', 'location', 'experience_id',
-                         'weekly_availability', 'preferred_modality', 'career', 'academic_cycle', 
-                         'main_motivation', 'description']
+        required_fields = ['weekly_availability', 'preferred_modality', 'career', 'academic_cycle']
 
         for field in required_fields:
             if field not in student_data or not student_data[field]:
@@ -102,10 +86,6 @@ class StudentPortImpl(StudentPort):
 
         logger.info("Validación exitosa")
         return True
-
-    async def check_email_exists(self, email: str) -> bool:
-        student = await self.student_repo.find_by_email(email)
-        return student is not None
 
     async def get_enriched_students(self) -> List[Student]:
         return await self.student_repo.get_enriched_students(self.session)

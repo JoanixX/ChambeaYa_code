@@ -22,13 +22,8 @@ class CompanyPortImpl(CompanyPort):
             company_data['updated_at'] = datetime.now()
         company = Company(
             id=0,
-            ruc=company_data['ruc'],
             name=company_data['name'],
-            location=company_data['location'],
             industry=company_data['industry'],
-            area_id=company_data['area_id'],
-            contact_name=company_data['contact_name'],
-            email=company_data['email'],
             company_culture=company_data['company_culture'],
             created_at=company_data['created_at'],
             updated_at=company_data['updated_at'],
@@ -55,13 +50,8 @@ class CompanyPortImpl(CompanyPort):
         
         updated_company = Company(
             id=company_id,
-            ruc=company_data.get('ruc', existing_company.ruc),
             name=company_data.get('name', existing_company.name),
-            location=company_data.get('location', existing_company.location),
             industry=company_data.get('industry', existing_company.industry),
-            area_id=company_data.get('area_id', existing_company.area_id),
-            contact_name=company_data.get('contact_name', existing_company.contact_name),
-            email=company_data.get('email', existing_company.email),
             company_culture=company_data.get('company_culture', existing_company.company_culture),
             created_at=company_data['created_at'],
             updated_at=company_data['updated_at'],
@@ -76,24 +66,11 @@ class CompanyPortImpl(CompanyPort):
     async def validate_company_data(self, company_data: Dict[str, Any]) -> bool:
         logger.info("Validando datos de la empresa: {company_data}")
 
-        required_fields = ['ruc', 'name', 'location', 'industry', 'area_id',
-                          'contact_name', 'email', 'company_culture']
+        required_fields = ['name', 'industry', 'company_culture']
         for field in required_fields:
             if field not in company_data or not company_data[field]:
                 logger.error(f"Campo requerido '{field}' está vacío o no existe.")
                 return False
 
-        if company_data['ruc'] and len(company_data['ruc']) != 11:
-            logger.error("El RUC debe tener 11 caracteres.")
-            return False
-        
         logger.info("Datos de la empresa validados correctamente.")
         return True
-    
-    async def check_email_exists(self, email: str) -> bool:
-        company = await self.company_repo.find_by_email(email)
-        return company is not None
-    
-    async def check_ruc_exists(self, ruc: str) -> bool:
-        company = await self.company_repo.find_by_ruc(ruc)
-        return company is not None

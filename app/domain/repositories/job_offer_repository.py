@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
-from app.domain.entities.job_offer import JobOffer
 from typing import Optional
+
+from app.domain.entities.job_offer import JobOffer
 
 class JobOfferRepository(ABC):
     @abstractmethod
     async def get_enriched_job_offers(self, session) -> list:
         pass
+    
     @abstractmethod
     async def save(self, job_offer: JobOffer):
         pass

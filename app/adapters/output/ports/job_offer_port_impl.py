@@ -29,8 +29,6 @@ class JobOfferPortImpl(JobOfferPort):
             approximated_salary=job_offer_data['approximated_salary'],
             duration=job_offer_data['duration'],
             start_date=job_offer_data['start_date'],
-            area_id=job_offer_data("area_id", None),
-            experience_id=job_offer_data("experience_id", None),
             modality=job_offer_data['modality'],
             embedding={},
             created_at=job_offer_data['created_at'],
@@ -43,7 +41,7 @@ class JobOfferPortImpl(JobOfferPort):
     async def get_job_offer(self, job_offer_id: int) -> Optional[JobOffer]:
         return await self.job_offer_repo.find_by_id(job_offer_id)
 
-    async def get_job_offer_by_company_id(self, company_id: int) -> Optional[JobOffer]:
+    async def get_job_offers_by_company_id(self, company_id: int) -> Optional[JobOffer]:
         return await self.job_offer_repo.find_by_company_id(company_id)
 
     async def get_all_job_offers(self) -> List[JobOffer]:
@@ -66,8 +64,6 @@ class JobOfferPortImpl(JobOfferPort):
             approximated_salary=job_offer_data.get('approximated_salary', existing_job_offer.approximated_salary),
             duration=job_offer_data.get('duration', existing_job_offer.duration),
             start_date=job_offer_data.get('start_date', existing_job_offer.start_date),
-            area_id=job_offer_data.get('area_id', None),
-            experience_id=job_offer_data.get('experience_id', None),
             modality=job_offer_data.get('modality', existing_job_offer.modality),
             embedding=job_offer_data.get('embedding', existing_job_offer.embedding),
             created_at=job_offer_data['created_at'],
@@ -83,8 +79,7 @@ class JobOfferPortImpl(JobOfferPort):
         logger.info(f"Validando datos de la oferta de trabajo: {job_offer_data}")
 
         required_fields = ['company_id', 'title', 'description', 'required_hours',
-                           'approximated_salary', 'duration', 'start_date', 'area_id',
-                           'experience_id', 'modality']
+                           'approximated_salary', 'duration', 'start_date', 'modality']
         
         for field in required_fields:
             if field not in job_offer_data or not job_offer_data[field]:

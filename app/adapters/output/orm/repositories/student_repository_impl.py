@@ -7,10 +7,9 @@ from app.domain.entities.student import Student
 from app.adapters.output.orm.models.student_model import StudentModel
 from app.adapters.output.orm.models.student_skill_model import StudentSkillModel
 from app.adapters.output.orm.models.student_interest_model import StudentInterestModel
-from app.adapters.output.orm.repositories.experience_detail_repository_impl import get_experience_name_by_id_impl
+from app.adapters.output.orm.models.experience_detail_model import ExperienceDetailModel
 from app.adapters.output.orm.models.interest_model import InterestModel
 from app.adapters.output.orm.models.skill_model import SkillModel
-from app.adapters.output.orm.repositories.skill_repository_impl import SkillRepositoryImpl
 
 class StudentRepositoryImpl(StudentRepository):
     def __init__(self, session):
@@ -21,9 +20,15 @@ class StudentRepositoryImpl(StudentRepository):
         student_models = students_result.scalars().all()
         enriched_students = []
         for s in student_models:
-            experience_id = None
-            if s.experience_id:
-                experience_id = await get_experience_name_by_id_impl(session, s.experience_id)
+            experience_detail_links_result = await session.execute(
+                select(StudentModel).where(StudentModel.id == s.id))
+            experience_detail_links = experience_detail_links_result.scalars().all()
+            experience_details = []
+            for link in experience_detail_links:
+                experience_detail_result = await session.execute(select(ExperienceDetailModel).where(ExperienceDetailModel.id == link.experience_id))
+                experience_detail_obj = experience_detail_result.scalar_one_or_none()
+                if experience_detail_obj:
+                    experience_details.append({"name": experience_detail_obj.name})
 
             skill_links_result = await session.execute(select(StudentSkillModel).where(StudentSkillModel.student_id == s.id))
             skill_links = skill_links_result.scalars().all()
@@ -44,16 +49,11 @@ class StudentRepositoryImpl(StudentRepository):
                     interests.append({"name": interest_obj.name})
             enriched_students.append({
                 "id": s.id,
-                "name": s.name,
-                "email": s.email,
                 "career": s.career,
                 "academic_cycle": s.academic_cycle,
-                "location": s.location,
-                "main_motivation": s.main_motivation,
-                "description": s.description,
                 "weekly_availability": s.weekly_availability,
                 "preferred_modality": s.preferred_modality,
-                "experience_id": experience_id,
+                "experience_details": experience_details,
                 "skills": skills,
                 "interests": interests,
                 "date_of_birth": s.date_of_birth.isoformat() if s.date_of_birth else None,
@@ -63,17 +63,10 @@ class StudentRepositoryImpl(StudentRepository):
 
     async def save(self, student: Student):
         model = StudentModel(
-            name=student.name,
-            email=student.email,
             career=student.career,
             academic_cycle=student.academic_cycle,
-            location=student.location,
-            main_motivation=student.main_motivation,
-            description=student.description,
             weekly_availability=student.weekly_availability,
             preferred_modality=student.preferred_modality,
-            experience_id=student.experience_id,
-            date_of_birth=student.date_of_birth,
             embedding=student.embedding
         )
         self.session.add(model)
@@ -87,41 +80,10 @@ class StudentRepositoryImpl(StudentRepository):
         if model:
             return Student (
                 id=model.id,
-                name=model.name,
-                email=model.email,
                 career=model.career,
                 academic_cycle=model.academic_cycle,
-                location=model.location,
-                main_motivation=model.main_motivation,
-                description=model.description,
                 weekly_availability=model.weekly_availability,
                 preferred_modality=model.preferred_modality,
-                experience_id=model.experience_id,
-                date_of_birth=model.date_of_birth,
-                embedding=model.embedding,
-                created_at=model.created_at,
-                updated_at=model.updated_at,
-                deleted_at=model.deleted_at
-            )
-        return None
-
-    async def find_by_email(self, email: str) -> Optional[Student]:
-        result = await self.session.execute(select(StudentModel).where(StudentModel.email == email))
-        model = result.scalar_one_or_none()
-        if model:
-            return Student (
-                id=model.id,
-                name=model.name,
-                email=model.email,
-                career=model.career,
-                academic_cycle=model.academic_cycle,
-                location=model.location,
-                main_motivation=model.main_motivation,
-                description=model.description,
-                weekly_availability=model.weekly_availability,
-                preferred_modality=model.preferred_modality,
-                experience_id=model.experience_id,
-                date_of_birth=model.date_of_birth,
                 embedding=model.embedding,
                 created_at=model.created_at,
                 updated_at=model.updated_at,
@@ -137,17 +99,10 @@ class StudentRepositoryImpl(StudentRepository):
             students.append(
                 Student (
                     id=model.id,
-                    name=model.name,
-                    email=model.email,
                     career=model.career,
                     academic_cycle=model.academic_cycle,
-                    location=model.location,
-                    main_motivation=model.main_motivation,
-                    description=model.description,
                     weekly_availability=model.weekly_availability,
                     preferred_modality=model.preferred_modality,
-                    experience_id=model.experience_id,
-                    date_of_birth=model.date_of_birth,
                     embedding=model.embedding,
                     created_at=model.created_at,
                     updated_at=model.updated_at,
@@ -160,17 +115,10 @@ class StudentRepositoryImpl(StudentRepository):
         result = await self.session.execute(select(StudentModel).where(StudentModel.id == student.id))
         model = result.scalar_one_or_none()
         if model:
-            model.name = student.name
-            model.email = student.email
             model.career = student.career
             model.academic_cycle = student.academic_cycle
-            model.location = student.location
-            model.main_motivation = student.main_motivation
-            model.description = student.description
             model.weekly_availability = student.weekly_availability
             model.preferred_modality = student.preferred_modality
-            model.experience_id = student.experience_id
-            model.date_of_birth = student.date_of_birth
             model.embedding = student.embedding
             await self.session.commit()
             await self.session.refresh(model)

@@ -12,14 +12,6 @@ class CompanyRepository(ABC):
         pass
 
     @abstractmethod
-    async def find_by_ruc(self, ruc: str) -> Optional[Company]:
-        pass
-
-    @abstractmethod
-    async def find_by_email(self, email: str) -> Optional[Company]:
-        pass
-
-    @abstractmethod
     async def get_all(self) -> list[Company]:
         pass
 

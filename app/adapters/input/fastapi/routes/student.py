@@ -18,7 +18,7 @@ async def register_student(request: Request, student: StudentCreate, session: As
     try:
         body = await request.body()
         logger.info(f"Body recibido: {body.decode()}")
-        logger.info(f"Iniciando registro de estudiante: {student.email}")
+        logger.info(f"Iniciando registro de estudiante: {student.career}")
         
         student_use_case = StudentUseCaseFactory(session).build()
 

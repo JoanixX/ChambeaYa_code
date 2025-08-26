@@ -15,9 +15,6 @@ class StudentUseCase:
         if not await self.student_port.validate_student_data(student_data):
             raise ValueError("Datos de estudiante inválidos")
 
-        if await self.student_port.check_email_exists(student_data["email"]):
-            raise ValueError("El email ya está registrado")
-
         student_id = await self.student_service.register_student(student_data)
 
         if not student_id:

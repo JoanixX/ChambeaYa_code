@@ -12,9 +12,6 @@ class CompanyUseCase:
         if not await self.company_port.validate_company_data(company_data):
             raise ValueError("Datos de la empresa inválidos")
 
-        if await self.company_port.check_email_exists(company_data["email"]):
-            raise ValueError("El email ya está registrado")
-
         company_id = await self.company_service.register_company(company_data)
 
         if not company_id:

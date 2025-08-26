@@ -48,14 +48,31 @@ class AppUserService:
         else:
             date_of_birth = None
 
+        email = user_data.get("email")
+        dni = user_data.get("dni")
+        name = user_data.get("name")
+        location = user_data.get("location")
+        password_hash = user_data.get("password_hash")
+        related_id = user_data.get("related_id")
+        cv_url = user_data.get("cv_url") if role == UserRole.student else None
+        main_motivation = user_data.get("main_motivation") if role == UserRole.student else None
+        description = user_data.get("description") if role == UserRole.student else None
+        ruc = user_data.get("ruc") if role == UserRole.company else None
+
         return AppUser(
             id=0,
-            email=user_data.get("email", None),
-            dni=user_data.get("dni", None),
-            password_hash=user_data.get("password_hash", None),
-            role=role,
-            related_id=user_data.get('related_id', None),
+            email=email,
+            dni=dni,
+            cv_url=cv_url,
+            name=name,
+            location=location,
+            ruc=ruc,
             date_of_birth=date_of_birth,
+            main_motivation=main_motivation,
+            description=description,
+            password_hash=password_hash,
+            role=role,
+            related_id=related_id,
             created_at=user_data['created_at'],
             updated_at=user_data['updated_at']
         )

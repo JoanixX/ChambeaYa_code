@@ -18,6 +18,8 @@ class AppUserModel(Base):
     location = Column(String(100), nullable=True)
     ruc = Column(String(50), nullable=True)
     date_of_birth = Column(Date, nullable=True)
+    main_motivation = Column(String(200), nullable=True)
+    description = Column(String(350), nullable=True)
     password_hash = Column(String(255), nullable=False)
     role = Column(Enum(UserRole, name="user_role"), nullable=False)
     related_id = Column(Integer, nullable=False)

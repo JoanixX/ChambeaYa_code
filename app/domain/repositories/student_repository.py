@@ -17,10 +17,6 @@ class StudentRepository(ABC):
         pass
 
     @abstractmethod
-    async def find_by_email(self, email: str) -> Optional[Student]:
-        pass
-
-    @abstractmethod
     async def get_all(self) -> list[Student]:
         pass
 

@@ -13,8 +13,6 @@ class JobOfferModel(Base):
     approximated_salary = Column(Integer, nullable=False)
     duration = Column(SmallInteger, nullable=False)
     start_date = Column(Date, nullable=False)
-    area_id = Column(SmallInteger, ForeignKey('area.id'), nullable=False)
-    experience_id = Column(SmallInteger, ForeignKey('experience_detail.id'), nullable=False)
     modality = Column(SmallInteger, nullable=False)
     embedding = Column(JSON, nullable=True)
     created_at = Column(DateTime, nullable=False, default=func.now())

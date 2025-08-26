@@ -15,7 +15,7 @@ class StudentInterestUseCase:
         interest_id = await self.student_interest_port.add_student_interest(student_interest) 
 
         if not interest_id:
-            raise ValueError("Error al agregar la habilidad al estudiante")
+            raise ValueError("Error al agregar el interés al estudiante")
 
         return interest_id
     

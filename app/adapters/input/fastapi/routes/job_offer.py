@@ -58,7 +58,7 @@ async def get_job_offer(job_offer_id: int, session: AsyncSession = Depends(get_s
         logger.error(f"Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
-@router.get("/company/{company_id}/job_offers", response_model=List[Dict], tags=["Job Offer"])
+@router.get("/company/{company_id}/job_offers", response_model=List[Dict], tags=["Job Offer", "Company"])
 async def get_company_job_offers(company_id: int, session: AsyncSession = Depends(get_session)):
     try:
         job_offer_use_case = JobOfferUseCaseFactory(session).build()
@@ -68,7 +68,7 @@ async def get_company_job_offers(company_id: int, session: AsyncSession = Depend
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
-        logger.error(f"Error al obtener las ofertas de trabajo de acuerdo a la compañia: {str(e)}", exc_info=True)
+        logger.error(f"Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 @router.put("/job_offer/{job_offer_id}", response_model=dict, tags=["Job Offer"])

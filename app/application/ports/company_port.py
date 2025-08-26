@@ -26,11 +26,3 @@ class CompanyPort(ABC):
     @abstractmethod
     async def validate_company_data(self, company_data: Dict[str, Any]) -> bool:
         pass
-
-    @abstractmethod
-    async def check_ruc_exists(self, ruc: str) -> bool:
-        pass
-
-    @abstractmethod
-    async def check_email_exists(self, email: str) -> bool:
-        pass

@@ -30,13 +30,8 @@ class CompanyService:
 
         updated_company = Company(
             id=company_id,
-            ruc=company_data.get("ruc", existing_company.ruc),
             name=company_data.get("name", existing_company.name),
-            location=company_data.get("location", existing_company.location),
             industry=company_data.get("industry", existing_company.industry),
-            area_id=company_data.get("area_id", existing_company.area_id),
-            contact_name=company_data.get("contact_name", existing_company.contact_name),
-            email=company_data.get("email", existing_company.email),
             company_culture=company_data.get("company_culture", existing_company.company_culture)
         )
 
@@ -53,13 +48,8 @@ class CompanyService:
             company_data['updated_at'] = datetime.now()
         return Company(
             id=0,  #se asignará automáticamente por la base de datos
-            ruc=company_data.get("ruc", None),
             name=company_data.get("name", None),
-            location=company_data.get("location", None),
             industry=company_data.get("industry", None),
-            area_id=company_data.get("area_id", None),
-            contact_name=company_data.get("contact_name", None),
-            email=company_data.get("email", None),
             company_culture=company_data.get("company_culture", None),
             created_at=company_data['created_at'],
             updated_at=company_data['updated_at']

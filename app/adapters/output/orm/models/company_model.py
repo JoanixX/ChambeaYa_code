@@ -1,17 +1,12 @@
-from sqlalchemy import Column, Integer, String, SmallInteger, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.sql import func
 from app.infraestructure.database.base import Base
 
 class CompanyModel(Base):
     __tablename__ = 'company'
     id = Column(Integer, primary_key=True)
-    ruc = Column(String(50), unique=True, nullable=False)
     name = Column(String(100), nullable=False)
-    location = Column(String(100), nullable=False)
     industry = Column(String(50), nullable=False)
-    area_id = Column(SmallInteger, ForeignKey('area.id'), nullable=False)
-    contact_name = Column(String(100), nullable=False)
-    email = Column(String(50), unique=True, nullable=False)
     company_culture = Column(String(100), nullable=False)
     created_at = Column(DateTime, nullable=False, default=func.now())
     updated_at = Column(DateTime, nullable=False, default=func.now())

@@ -8,10 +8,9 @@ class AgreementStatus(enum.Enum):
     cancelled = 'cancelled'
 
 class Agreement:
-    def __init__(self, id: int, job_offer_id: int, student_id: int, 
-                 status: AgreementStatus, start_date: date, 
-                 end_date: date, created_at: datetime, updated_at: datetime, 
-                 deleted_at: datetime = None):
+    def __init__(self, id: int, job_offer_id: int, student_id: int, status: AgreementStatus,
+                 start_date: date = None, end_date: date = None, created_at: datetime = None,
+                 updated_at: datetime = None, deleted_at: datetime = None):
         self.id = id
         self.job_offer_id = job_offer_id
         self.student_id = student_id

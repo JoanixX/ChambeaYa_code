@@ -11,8 +11,6 @@ class JobOfferCreate(BaseModel):
     approximated_salary: int = Field(..., description="Approximated salary")
     duration: int = Field(..., description="Duration")
     start_date: date = Field(..., description="Start date")
-    area_id: int = Field(..., description="Area ID")
-    experience_id: int = Field(..., description="Experience ID")
     modality: int = Field(..., description="Modality")
 
     @field_validator("start_date")
@@ -26,14 +24,6 @@ class JobOfferCreate(BaseModel):
     @field_validator('modality')
     def preferred_modality_valid(cls, v, info):
         return in_choices(v, [1, 2, 3], 'La modalidad preferida')
-    
-    @field_validator('experience_id')
-    def experience_id_valid(cls, v, info):
-        return positive_int(v, 'El ID de experiencia')
-    
-    @field_validator('area_id')
-    def area_id_valid(cls, v, info):
-        return positive_int(v, 'El ID del area')
 
 class JobOfferResponse(BaseModel):
     id: int
@@ -44,7 +34,5 @@ class JobOfferResponse(BaseModel):
     approximated_salary: int
     duration: int
     start_date: date
-    area_id: int
-    experience_id: int 
     modality: int
     embedding: Optional[dict] = None

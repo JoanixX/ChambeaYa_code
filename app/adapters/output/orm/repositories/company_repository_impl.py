@@ -1,9 +1,10 @@
-from app.domain.repositories.company_repository import CompanyRepository
-from app.domain.entities.company import Company
-from app.adapters.output.orm.models.company_model import CompanyModel
 from sqlalchemy.future import select
 from sqlalchemy import delete
 from typing import Optional
+
+from app.domain.repositories.company_repository import CompanyRepository
+from app.domain.entities.company import Company
+from app.adapters.output.orm.models.company_model import CompanyModel
 
 class CompanyRepositoryImpl(CompanyRepository):
     def __init__(self, session):
@@ -11,13 +12,8 @@ class CompanyRepositoryImpl(CompanyRepository):
 
     async def save(self, company: Company):
         model = CompanyModel(
-            ruc=company.ruc,
             name=company.name,
-            location=company.location,
             industry=company.industry,
-            area_id=company.area_id,
-            contact_name=company.contact_name,
-            email=company.email,
             company_culture=company.company_culture
         )
         self.session.add(model)
@@ -31,53 +27,8 @@ class CompanyRepositoryImpl(CompanyRepository):
         if model:
             return Company(
                 id=model.id,
-                ruc=model.ruc,
                 name=model.name,
-                location=model.location,
                 industry=model.industry,
-                area_id=model.area_id,
-                contact_name=model.contact_name,
-                email=model.email,
-                company_culture=model.company_culture,
-                created_at=model.created_at,
-                updated_at=model.updated_at,
-                deleted_at=model.deleted_at
-            )
-        return None
-
-    async def find_by_ruc(self, ruc: str) -> Optional[Company]:
-        result = await self.session.execute(select(CompanyModel).where(CompanyModel.ruc == ruc))
-        model = result.scalar_one_or_none()
-        if model:
-            return Company(
-                id=model.id,
-                ruc=model.ruc,
-                name=model.name,
-                location=model.location,
-                industry=model.industry,
-                area_id=model.area_id,
-                contact_name=model.contact_name,
-                email=model.email,
-                company_culture=model.company_culture,
-                created_at=model.created_at,
-                updated_at=model.updated_at,
-                deleted_at=model.deleted_at
-            )
-        return None
-
-    async def find_by_email(self, email: str) -> Optional[Company]:
-        result = await self.session.execute(select(CompanyModel).where(CompanyModel.email == email))
-        model = result.scalar_one_or_none()
-        if model:
-            return Company(
-                id=model.id,
-                ruc=model.ruc,
-                name=model.name,
-                location=model.location,
-                industry=model.industry,
-                area_id=model.area_id,
-                contact_name=model.contact_name,
-                email=model.email,
                 company_culture=model.company_culture,
                 created_at=model.created_at,
                 updated_at=model.updated_at,
@@ -92,13 +43,8 @@ class CompanyRepositoryImpl(CompanyRepository):
         for model in models:
             companies.append(Company(
                 id=model.id,
-                ruc=model.ruc,
                 name=model.name,
-                location=model.location,
                 industry=model.industry,
-                area_id=model.area_id,
-                contact_name=model.contact_name,
-                email=model.email,
                 company_culture=model.company_culture,
                 created_at=model.created_at,
                 updated_at=model.updated_at,
@@ -110,13 +56,8 @@ class CompanyRepositoryImpl(CompanyRepository):
         result = await self.session.execute(select(CompanyModel).where(CompanyModel.id == company.id))
         model = result.scalar_one_or_none()
         if model:
-            model.ruc = company.ruc
             model.name = company.name
-            model.location = company.location
             model.industry = company.industry
-            model.area_id = company.area_id
-            model.contact_name = company.contact_name
-            model.email = company.email
             model.company_culture = company.company_culture
             await self.session.commit()
             await self.session.refresh(model)

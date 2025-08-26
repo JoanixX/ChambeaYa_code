@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
-from app.domain.entities.job_offer import JobOffer
 from typing import Optional, Dict, Any, List
+
+from app.domain.entities.job_offer import JobOffer
 
 class JobOfferPort(ABC):
     @abstractmethod
     async def get_enriched_job_offers(self) -> List[JobOffer]:
         pass
+
     @abstractmethod
     async def register_job_offer(self, job_offer_data: Dict[str, Any]) -> JobOffer:
         pass
@@ -15,7 +17,7 @@ class JobOfferPort(ABC):
         pass
     
     @abstractmethod
-    async def get_job_offer_by_company_id(self, company_id: int) -> Optional[JobOffer]:
+    async def get_job_offers_by_company_id(self, company_id: int) -> Optional[JobOffer]:
         pass
 
     @abstractmethod
