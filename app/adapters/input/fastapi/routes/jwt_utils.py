@@ -1,10 +1,20 @@
+import os
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-SECRET_KEY = "OWigue90ERGIJ34T0jefig28"
+#la clave de firma se lee del entorno. si se filtra, cualquiera puede emitir
+#tokens válidos, así que nunca debe estar en el código fuente.
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+
+if not SECRET_KEY:
+    raise RuntimeError(
+        "Falta la variable de entorno JWT_SECRET_KEY. "
+        "Generar una clave aleatoria, por ejemplo: python -c \"import secrets; print(secrets.token_urlsafe(32))\""
+    )
+
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
