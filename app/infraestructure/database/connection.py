@@ -1,18 +1,28 @@
+import os
+
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from typing import AsyncGenerator
 from sqlalchemy.orm import sessionmaker
 
-#conexion a la base de datos PostgreSQL
-## DATABASE_URL = "postgresql+asyncpg://postgres:etc100charmander@localhost:5432/chambeaya-db"
-#DATABASE_URL = "postgresql+asyncpg://admindbchambeaya:1qa.2ws.3ed.@db-postgresql-chambeaya.postgres.database.azure.com:5432/chambeaya-bd?ssl=require"
-DATABASE_URL = "postgresql+asyncpg://admindbchambeaya:1qa.2ws.3ed.@db-chambeaya.postgres.database.azure.com:5432/chambeaya-bd?ssl=require"
-##CDATABASE_URL = "postgresql+asyncpg://admindbchambeaya%40db-postgresql-chambeaya:1qa.!QA.@db-postgresql-chambeaya.postgres.database.azure.com:5432/chambeaya-db?ssl=require"
+#la cadena de conexión se lee del entorno, nunca se versiona en el repositorio.
+#ejemplo: postgresql+asyncpg://usuario:clave@host:5432/chambeaya-bd?ssl=require
+DATABASE_URL = os.getenv("DATABASE_URL")
 
+if not DATABASE_URL:
+    raise RuntimeError(
+        "Falta la variable de entorno DATABASE_URL. "
+        "Definirla con la cadena de conexión asyncpg de PostgreSQL, por ejemplo: "
+        "postgresql+asyncpg://usuario:clave@host:5432/chambeaya-bd?ssl=require"
+    )
+
+#el echo vuelca cada sentencia SQL con sus parámetros, así que solo se activa
+#bajo demanda (SQL_ECHO=true) y queda apagado en producción.
+SQL_ECHO = os.getenv("SQL_ECHO", "false").lower() == "true"
 
 #creamos el engine asíncrono
 engine = create_async_engine(
     DATABASE_URL,
-    echo=True  #el echo hace que se muestren las consultas en consola
+    echo=SQL_ECHO
 )
 
 #creamos una sesión asincrona para interactue con la base de datos

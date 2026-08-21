@@ -1,146 +1,119 @@
-# ChambeaYA - Rama Develop
+# ChambeaYa Backend — FastAPI service matching students to company challenges
 
-ChambeaYA es una plataforma diseñada para conectar estudiantes universitarios con empresas a través de retos y proyectos reales, facilitando el desarrollo profesional y la colaboración entre ambos sectores. El sistema permite a las empresas registrar desafíos, y a los estudiantes postularse según sus intereses, habilidades y disponibilidad, generando matches inteligentes y acuerdos de colaboración.
+The backend for a platform that connects university students with companies posting real
+project challenges. It owns the relational domain — students, companies, job offers,
+skills, interests, experience, matches and agreements — over async SQLAlchemy and
+PostgreSQL, and delegates candidate/offer ranking to a separate AI service over HTTP.
+The code is laid out as ports and adapters: 15 domain entities, 8 use cases with explicit
+port interfaces, and FastAPI confined to the input adapter.
 
----
+**Interactive API docs:** `/docs` (Swagger) · `/redoc` · **License:** MIT
 
-## ¿De qué trata el proyecto?
+## Results
 
-El objetivo principal de ChambeaYA es crear un ecosistema donde:
-- **Empresas** puedan publicar retos o proyectos reales, especificando sus necesidades, cultura y requerimientos.
-- **Estudiantes** puedan registrarse, detallar su perfil académico y profesional, y postularse a los retos que mejor se adapten a sus intereses y habilidades.
-- El sistema realice un proceso de matching inteligente, filtrando y recomendando las mejores combinaciones empresa-estudiante.
-- Se gestionen acuerdos y el seguimiento de la experiencia.
+There are no tests, no benchmarks and no evaluation of the matching in this repository —
+the CI workflow builds and deploys but runs no test step. What is verifiable is the API
+surface and the layering, so that is what this table reports.
 
-La plataforma está pensada para ser escalable, mantenible y fácil de extender, permitiendo la integración de nuevas funcionalidades y adaptaciones a diferentes contextos educativos y empresariales.
+| Property | Value | Evidence |
+|---|---|---|
+| HTTP endpoints exposed | 8, all under `/api` | `app/main.py` router registration |
+| Domain entities | 15 | `app/domain/entities/` |
+| Use cases with explicit ports | 8 | `app/application/use_cases/`, `app/application/ports/` |
+| Domain repository interfaces | 6 | `app/domain/repositories/` |
+| Domain services (framework-free) | 5 | `app/domain/services/` |
+| Database access | async SQLAlchemy + asyncpg | `app/infraestructure/database/connection.py` |
+| Production server | gunicorn, 4 uvicorn workers | `startup.sh` |
+| Automated tests | **none** | — |
+| CI test stage | **none** — build and deploy only | `.github/workflows/s5_api-backend-cy.yml` |
 
----
+| Method | Route | Purpose |
+|---|---|---|
+| POST | `/api/register/user` | Create an application user |
+| POST | `/api/login` | Authenticate, returns a JWT |
+| POST | `/api/register/student` | Register a student profile |
+| POST | `/api/register/company` | Register a company |
+| POST | `/api/filter/student/preprocess_all_student` | Embed all student profiles (proxied to the AI service) |
+| POST | `/api/filter/job_offer/preprocess_all_job_offer` | Embed all job offers (proxied to the AI service) |
+| POST | `/api/aimodel/student/best_job_offers/{student_id}` | Rank offers for one student |
+| POST | `/api/aimodel/job_offer/matching_offers` | Score a student against an offer |
 
-## Arquitectura Hexagonal (Ports & Adapters)
+Reproduce: `uvicorn app.main:app --reload`, then open `http://localhost:8000/docs`.
 
-ChambeaYA está construido siguiendo el patrón de **arquitectura hexagonal** (también conocido como Ports & Adapters), que busca separar claramente la lógica de negocio del resto de la aplicación (infraestructura, frameworks, interfaces de usuario, etc.).
+## How it works
 
-### ¿Cómo está organizada?
+- **Ranking lives in a separate service, not in this codebase.**
+  `app/infraestructure/ai_client/ai_connection.py` posts to an AI API (default
+  `http://localhost:8001`) for both embedding and matching. The backend owns the database
+  and the authorization decision; the model service stays stateless and independently
+  deployable, at the cost of a network hop per ranking request.
+- **Every use case declares a port.** `app/application/ports/` holds one interface per
+  use case, so the FastAPI route depends on an abstraction rather than on a concrete
+  repository — the domain can be exercised without a running database.
+- **Domain services are framework-free** (`agreement_policy_checker`,
+  `student_profile_evaluator`, `company_needs_analyzer`, `filter_match_service`,
+  `match_job_student_service`), keeping the eligibility and evaluation rules readable
+  without FastAPI or SQLAlchemy in scope.
+- **Database access is async end to end** — `create_async_engine` with asyncpg and an
+  `AsyncSession` dependency — so a request awaiting Postgres does not occupy the event
+  loop while the AI service call is also in flight.
+- **Passwords are hashed with bcrypt via passlib**, and sessions are HS256 JWTs with a
+  60-minute default expiry (`app/adapters/input/fastapi/routes/jwt_utils.py`).
+- **Secrets and the connection string come from the environment and have no in-code
+  fallback.** A missing `DATABASE_URL` or `JWT_SECRET_KEY` raises at import with a message
+  naming the variable, because a default signing key that silently works in production is
+  worse than a service that refuses to boot.
+- **CORS is an explicit allowlist**, not a wildcard: only the two local frontend origins
+  are permitted.
 
-- **Dominio:**
-  - Contiene las entidades principales (por ejemplo, `Student`, `Company`, `Match`), reglas de negocio y servicios puros.
-  - No depende de detalles técnicos ni de frameworks externos.
+## Quick start
 
-- **Aplicación:**
-  - Orquesta los casos de uso (por ejemplo, registrar estudiante, crear match, asignar cursos).
-  - Define los **puertos** (interfaces abstractas) que describen lo que la aplicación necesita del dominio o de la infraestructura.
+```bash
+python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env      # fill in DATABASE_URL and JWT_SECRET_KEY
+uvicorn app.main:app --reload
+```
 
-- **Adapters (Adaptadores):**
-  - Implementan los puertos definidos en la capa de aplicación.
-  - Incluyen los controladores HTTP (FastAPI), repositorios de base de datos, y cualquier integración externa.
+`DATABASE_URL` and `JWT_SECRET_KEY` are required — the app refuses to start without them,
+rather than falling back to a default secret. `ACCESS_TOKEN_EXPIRE_MINUTES` (default 60),
+`SQL_ECHO` (default `false`) and `IA_API_URL` are optional; see `.env.example`.
 
-- **Infraestructura:**
-  - Proporciona detalles concretos de tecnologías (por ejemplo, conexión a base de datos, frameworks, librerías externas).
+API docs at `http://localhost:8000/docs` (Swagger) and `/redoc`.
 
-### Beneficios de la arquitectura hexagonal
-- Permite cambiar la tecnología de base de datos, framework web o cualquier integración externa sin afectar la lógica de negocio.
-- Facilita las pruebas unitarias y de integración, ya que la lógica de negocio está desacoplada de los detalles técnicos.
-- Hace que el sistema sea más mantenible y escalable a largo plazo.
+Ranking endpoints additionally require the AI service running on port 8001; set
+`IA_API_URL` if it lives elsewhere. In production the service is started with
+`./startup.sh` (gunicorn, 4 uvicorn workers, port 8000) and deployed to Azure App Service
+by the workflow in `.github/workflows/`.
 
----
+## Data & provenance
 
-## Estructura general del repositorio
+No datasets are committed. All records — student profiles, companies, offers, skills,
+matches, agreements — are created at runtime through the API and persisted to PostgreSQL.
+Embeddings and match scores are derived by the external AI service and are not stored in
+this repository.
 
-- `app/domain/`: Entidades, repositorios y servicios del dominio.
-- `app/application/`: Casos de uso y puertos (interfaces de aplicación).
-- `app/adapters/`: Adaptadores de entrada (FastAPI) y salida (ORM, otros servicios).
-- `app/infraestructure/`: Configuración y utilidades de infraestructura (base de datos, etc.).
+## Limitations
 
----
+- **The old credentials are still in git history and must be rotated.** The database
+  password and JWT signing key were previously literals in source; they now come from the
+  environment, but removing them from the working tree does not remove them from earlier
+  commits. Until the Postgres password is changed and a new signing key is issued, anyone
+  with read access to this repository's history holds working database credentials and can
+  forge tokens.
+- **No tests and no CI test stage.** The deploy workflow installs dependencies, zips the
+  tree and ships it; nothing verifies that the application imports, that a route responds,
+  or that a use case behaves. The workflow's own comment marks the test step as still
+  optional and unfilled.
+- **The ports layer is declared but not enforced.** Interfaces exist for all 8 use cases,
+  yet the routes construct their dependencies directly rather than receiving them through
+  injection, so the abstraction does not currently buy testability.
+- **There is no database migration tooling.** The schema is whatever the entity
+  definitions produced against the live database; there is no versioned, replayable path
+  to recreate it.
+- **No rate limiting, no refresh tokens, no token revocation.** A leaked 60-minute JWT is
+  valid until it expires.
 
-## Endpoints y API
+## License
 
-La API está construida con FastAPI y expone endpoints para registrar empresas, estudiantes, gestionar matches, acuerdos y más. Para detalles de cada endpoint, consulta la documentación interna de cada módulo en `app/adapters/input/fastapi/routes/`.
-
----
-
-## Instalación y ejecución rápida
-
-1. Clona el repositorio y entra a la carpeta del proyecto.
-2. Crea y activa un entorno virtual de Python.
-  '''python -m venv venv'''
-3. Instala las dependencias:
-   ```sh
-   pip install -r requirements.txt
-   ```
-4. Ejecuta la aplicación:
-   ```sh
-   uvicorn app.main:app --reload
-   ```
-5. Accede a la documentación interactiva en [http://localhost:8000/docs](http://localhost:8000/docs)
-
----
-
-## Contribuciones
-
-Las contribuciones son bienvenidas. Por favor, revisa la estructura y la arquitectura antes de proponer cambios importantes.
-
----
-
-## Créditos
-
-Desarrollado por el equipo ChambeaYA.
-
----
-
-# (Guía de instalación original)
-
-Versión de pip usada: 25.1.1
-
-Pasos para configurar el entorno local con fastAPI:
-1) Crear una carpeta
-2) Entrar a la carpeta desde la terminal
-3) Abrir el VSCode desde la carpeta
-4) Crear un entorno virtual con Python 
-(py -m venv venv)
-
-===========================================================================
-Para Windows:
-5) Una vez creado, entrar al venv desde la terminal 
-(venv\Scripts\Activate.ps1 -> en PowerShell)
-(venv\Scripts\activate.bat -> en cmd.exe)
-
-Para Linux:
-5) Entrar al venv desde la terminal
-(venv/bin/actívate -> bash/zsh)
-(venv/bin/activate.fish -> fish)
-(venv/bin/activate.csh -> csh/tcsh)
-(venv/bin/Activate.ps1 -> pwsh)
-
-===========================================================================
-
-6) Instalar el fastAPI (pip install "fastapi[standard]")
-7) verificar la instalación con (pip freeze)
-8) En el VSC, creamos un archivo main.py donde pondremos un script de prueba
-9) Ponemos cualquier tipo de script de prueba (
-from fastapi import FastAPI
-
-app = FastAPI()
-@app.get("/")
-
-def index():
-    return {
-        "message": "prueba1"
-    }
-)
-10) Volvemos a la terminal y ejecutamos el archivo para comprobar si funciona:
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-11) Ingresamos a la ruta que da el unicorn y verificamos si se muestra el mensaje
-
-Para entrar a la documentación realizada por defecto de fastAPI:
-- http://127.0.0.1:8000/docs
-
-Para entrar a la documentación alternativa realizada por defecto por fastAPI:
-- http://127.0.0.1:8000/redoc
-
-===========================================================================
-
-Para el modelo de AI:
-
-Para el modelo, se debe tomar en cuenta que primero se va a abrir el servidor en el puerto:
-uvicorn app.main:app --port 8000 --reload
+MIT
